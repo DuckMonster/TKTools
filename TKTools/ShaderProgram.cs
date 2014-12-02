@@ -9,22 +9,14 @@ namespace TKTools
 {
 	public class ShaderProgram : IDisposable
 	{
-		public enum ArgumentType
-		{
-			Uniform,
-			Attribute
-		}
-
 		public struct Argument
 		{
 			ShaderProgram program;
-			ArgumentType type;
 			int ID;
 
-			public Argument(ArgumentType type, int ID, ShaderProgram prog)
+			public Argument(int ID, ShaderProgram prog)
 			{
 				program = prog;
-				this.type = type;
 				this.ID = ID;
 			}
 
@@ -190,8 +182,8 @@ namespace TKTools
 			{
 				int uni = GetUniform(name), attr = GetAttribute(name);
 
-				if (uni != -1) return new Argument(ArgumentType.Uniform, uni, this);
-				else if (attr != -1) return new Argument(ArgumentType.Attribute, attr, this);
+				if (uni != -1) return new Argument(uni, this);
+				else if (attr != -1) return new Argument(attr, this);
 				else throw new NullReferenceException();
 			}
 		}
