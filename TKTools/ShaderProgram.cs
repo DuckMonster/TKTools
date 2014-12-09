@@ -78,6 +78,16 @@ namespace TKTools
 			}
 		}
 
+		string vertexLog, fragmentLog, programLog;
+
+		public string Log
+		{
+			get
+			{
+				return vertexLog + "\n" + fragmentLog + "\n" + programLog;
+			}
+		}
+
 		Dictionary<string, int> attributeList = new Dictionary<string, int>();
 		Dictionary<string, int> uniformList = new Dictionary<string, int>();
 		public int programID;
@@ -87,9 +97,9 @@ namespace TKTools
 			string vertexSrc = "", fragmentSrc = "";
 			ReadFileCombined(source, ref vertexSrc, ref fragmentSrc);
 
-			int vertexID = CreateShader(ShaderType.VertexShader, vertexSrc);
-			int fragmentID = CreateShader(ShaderType.FragmentShader, fragmentSrc);
-			programID = CreateProgram(vertexID, fragmentID);
+			int vertexID = CreateShader(ShaderType.VertexShader, vertexSrc, ref vertexLog);
+			int fragmentID = CreateShader(ShaderType.FragmentShader, fragmentSrc, ref fragmentLog);
+			programID = CreateProgram(vertexID, fragmentID, ref programLog);
 		}
 
 		public void Dispose()
@@ -97,27 +107,25 @@ namespace TKTools
 			GL.DeleteProgram(programID);
 		}
 
-		static int CreateShader(ShaderType type, string src)
+		static int CreateShader(ShaderType type, string src, ref string log)
 		{
 			int id = GL.CreateShader(type);
 			GL.ShaderSource(id, src);
 			GL.CompileShader(id);
 
-			Console.WriteLine("Shader log:");
-			Console.WriteLine(GL.GetShaderInfoLog(id));
+			log = GL.GetShaderInfoLog(id);
 
 			return id;
 		}
 
-		static int CreateProgram(int vertex, int fragment)
+		static int CreateProgram(int vertex, int fragment, ref string log)
 		{
 			int id = GL.CreateProgram();
 			GL.AttachShader(id, vertex);
 			GL.AttachShader(id, fragment);
 			GL.LinkProgram(id);
 
-			Console.WriteLine("Program log:");
-			Console.WriteLine(GL.GetProgramInfoLog(id));
+			log = GL.GetShaderInfoLog(id);
 
 			GL.DetachShader(id, vertex);
 			GL.DetachShader(id, fragment);
