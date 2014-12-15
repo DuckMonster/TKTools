@@ -11,7 +11,7 @@ namespace TKTools
 		}
 		public static float GetAngle(Vector2 vec)
 		{
-			return (float)Math.Atan2(vec.Y, vec.X);
+			return ToDegrees((float)Math.Atan2(vec.Y, vec.X));
 		}
 
 		public static Vector2 GetAngleVector(float a)
@@ -21,17 +21,27 @@ namespace TKTools
 
 		public static float ToRadians(float deg)
 		{
-			return (float)(deg / 180 * Math.PI);
+			return MathHelper.DegreesToRadians(deg);
 		}
 
 		public static float ToDegrees(float rad)
 		{
-			return (float)(rad * 180 / Math.PI);
+			return MathHelper.RadiansToDegrees(rad);
 		}
 
 		public static float Exp(float v, float max)
 		{
-			return (float)Math.Exp(-v * max);
+			return Exp(v, max, (float)Math.E);
 		}
+
+		public static float Exp(float v, float max, float exp)
+		{
+			return (float)Math.Pow(exp, -v * max);
+		}
+	}
+
+	public class SHITBALLS
+	{
+
 	}
 }

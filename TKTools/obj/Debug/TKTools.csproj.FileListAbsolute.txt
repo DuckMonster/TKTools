@@ -18,3 +18,4 @@ D:\GitHub\C#\TKTools\TKTools\bin\Debug\OpenTK.xml
 D:\GitHub\C#\TKTools\TKTools\bin\Debug\OpenTK.GLControl.xml
 D:\GitHub\C#\TKTools\TKTools\obj\Debug\TKTools.dll
 D:\GitHub\C#\TKTools\TKTools\obj\Debug\TKTools.pdb
+D:\GitHub\C#\TKTools\TKTools\obj\Debug\TKTools.csprojResolveAssemblyReference.cache
