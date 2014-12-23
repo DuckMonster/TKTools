@@ -2,7 +2,7 @@
 
 namespace TKTools
 {
-	public class Color
+	public struct Color
 	{
 		#region Colors
 		private static uint white = 0xFFFFFFFF, black = 0xFF000000, gray = 0xFF808080,
@@ -79,41 +79,33 @@ namespace TKTools
 			}
 		}
 
-		public Color(float r, float g, float b, float a = 1f)
+		public Color(float rr, float gg, float bb, float aa = 1f)
 		{
-			R = r;
-			G = g;
-			B = b;
-			A = a;
+			r = rr;
+			g = gg;
+			b = bb;
+			a = aa;
 		}
 
 		public Color(uint argb)
 		{
-			uint r = (argb >> 16) & 0xFF;
-			uint g = (argb >> 8) & 0xFF;
-			uint b = argb & 0xFF;
-			uint a = (argb >> 24) & 0xFF;
+			uint rr = (argb >> 16) & 0xFF;
+			uint gg = (argb >> 8) & 0xFF;
+			uint bb = argb & 0xFF;
+			uint aa = (argb >> 24) & 0xFF;
 
-			R = (float)r / 255;
-			G = (float)g / 255;
-			B = (float)b / 255;
-			A = (float)a / 255;
+			r = (float)rr / 255;
+			g = (float)gg / 255;
+			b = (float)bb / 255;
+			a = (float)aa / 255;
 		}
 
-		public Color(int r, int g, int b, int a = 255)
+		public Color(int rr, int gg, int bb, int aa = 255)
 		{
-			R = (float)r / 255;
-			G = (float)g / 255;
-			B = (float)b / 255;
-			A = (float)a / 255;
-		}
-
-		public Color(Color c)
-		{
-			R = c.R;
-			G = c.G;
-			B = c.B;
-			A = c.A;
+			r = (float)rr / 255;
+			g = (float)gg / 255;
+			b = (float)bb / 255;
+			a = (float)aa / 255;
 		}
 
 		public static Color Blend(Color c1, Color c2, float v)
