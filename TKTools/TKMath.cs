@@ -38,10 +38,21 @@ namespace TKTools
 		{
 			return (float)Math.Pow(exp, -v * max);
 		}
-	}
 
-	public class SHITBALLS
-	{
+		public static Vector2 PolarPointVector(float a, int n)
+		{
+			a = ToRadians(a);
+			return new Vector2(PolarPoint(a, n) * (float)Math.Cos(a), PolarPoint(a, n) * (float)Math.Sin(a));
+		}
 
+		static float PolarPoint(float a, int n)
+		{
+			return Sec(2f / n * (float)Math.Asin(Math.Sin(n / 2f * a)));
+		}
+
+		public static float Sec(float a)
+		{
+			return (float)(1f / Math.Cos(a));
+		}
 	}
 }

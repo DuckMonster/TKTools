@@ -192,7 +192,7 @@ namespace TKTools
 
 				if (uni != -1) return new Argument(uni, this);
 				else if (attr != -1) return new Argument(attr, this);
-				else throw new NullReferenceException();
+				else return new Argument(-1, this);
 			}
 		}
 

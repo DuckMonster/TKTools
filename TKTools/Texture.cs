@@ -26,6 +26,10 @@ namespace TKTools
 			}
 		}
 
+		public Texture()
+		{
+			LoadTexture();
+		}
 		public Texture(string filename)
 		{
 			LoadTexture(filename);
@@ -36,25 +40,35 @@ namespace TKTools
 			GL.DeleteTexture(textureID);
 		}
 
-		public void LoadTexture(string filename)
+		void LoadTexture()
+		{
+			textureID = GL.GenTexture();
+			Bind();
+
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Nearest);
+		}
+
+		void LoadTexture(string filename)
 		{
 			using (Bitmap bmp = new Bitmap(filename))
 			{
-				textureID = GL.GenTexture();
-				Bind();
-
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Nearest);
-
-				BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-
-				width = bmp.Width;
-				height = bmp.Height;
-
-				bmp.UnlockBits(data);
+				LoadTexture();
+				UploadBitmap(bmp);
 			}
+		}
+
+		public void UploadBitmap(Bitmap bmp)
+		{
+			BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+			Bind();
+			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+
+			width = bmp.Width;
+			height = bmp.Height;
+
+			bmp.UnlockBits(data);
 		}
 
 		public void Bind()

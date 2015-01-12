@@ -12,6 +12,13 @@ namespace TKTools
 		List<T> vertexList = new List<T>();
 		int dimensions = 0;
 
+		public T[] Array
+		{
+			get
+			{
+				return vertexList.ToArray();
+			}
+		}
 		public int Count
 		{
 			get

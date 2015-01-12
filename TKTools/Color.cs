@@ -1,4 +1,5 @@
 ﻿using OpenTK;
+using DRAW = System.Drawing;
 
 namespace TKTools
 {
