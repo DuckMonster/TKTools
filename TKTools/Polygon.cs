@@ -1,6 +1,7 @@
 ﻿using OpenTK;
 using System.Linq;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace TKTools
 {
@@ -8,9 +9,30 @@ namespace TKTools
 	{
 		public List<Vector2> pointList = new List<Vector2>();
 
+		public RectangleF Bounds
+		{
+			get
+			{
+				PolygonProjection vert = new PolygonProjection(this, new Vector2(0, 1)),
+						hori = new PolygonProjection(this, new Vector2(1, 0));
+
+				return new RectangleF(hori.Min, vert.Min, hori.Length, vert.Length);
+			}
+		}
+
 		public Polygon(params Vector2[] points)
 		{
 			pointList.AddRange(points);
+		}
+
+		public void AddPoint(Polygon p)
+		{
+			foreach (Vector2 point in p.pointList)
+				AddPoint(point);
+		}
+		public void AddPoint(Vector2 point)
+		{
+			pointList.Add(point);
 		}
 
 		public Vector2 GetEdgeNormal(int n)
