@@ -20,6 +20,20 @@ namespace TKTools
 			}
 		}
 
+		public Vector2 Center
+		{
+			get
+			{
+				RectangleF bounds = Bounds;
+				Vector2 center = Vector2.Zero;
+
+				center.X = bounds.X + bounds.Width / 2;
+				center.Y = bounds.Y + bounds.Height / 2;
+
+				return center;
+			}
+		}
+
 		public Polygon(params Vector2[] points)
 		{
 			pointList.AddRange(points);
@@ -40,6 +54,7 @@ namespace TKTools
 			return (pointList[n % pointList.Count] - pointList[(n + 1) % pointList.Count]).PerpendicularRight;
 		}
 
+		public bool Intersects(Vector2 point) { return Intersects(new Polygon(point)); }
 		public bool Intersects(Polygon p)
 		{
 			if (pointList.Count > 1)
@@ -71,6 +86,31 @@ namespace TKTools
 			}
 
 			return true;
+		}
+
+		public void Scale(float scale)
+		{
+			Vector2 center = Center;
+
+			for (int i = 0; i < pointList.Count; i++)
+			{
+				Vector2 pos = pointList[i] - center;
+				pos = pos.Normalized() * pos.Length * scale;
+				pointList[i] = pos + center;
+			}
+		}
+
+		public static Polygon operator *(Polygon p, float scale)
+		{
+			Polygon newPoly = new Polygon(p.pointList.ToArray());
+			newPoly.Scale(scale);
+
+			return newPoly;
+		}
+
+		public static implicit operator Vector2[](Polygon p)
+		{
+			return p.pointList.ToArray();
 		}
 	}
 
