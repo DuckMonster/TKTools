@@ -15,6 +15,27 @@ namespace TKTools
 		Graphics textGraphics;
 
 		Texture texture;
+		Color color = Color.White;
+
+		public Color Color
+		{
+			get
+			{
+				return color;
+			}
+			set
+			{
+				color = value;
+			}
+		}
+
+		public System.Drawing.Color SystemColor
+		{
+			get
+			{
+				return System.Drawing.Color.FromArgb((int)(255 * color.R), (int)(255 * color.G), (int)(255 * color.B));
+			}
+		}
 
 		public Vector2 CanvasSize
 		{
@@ -38,6 +59,7 @@ namespace TKTools
 			textGraphics = Graphics.FromImage(textBitmap);
 
 			texture = new Texture();
+			texture.UploadBitmap(textBitmap);
 		}
 
 		public void Dispose()
@@ -54,6 +76,7 @@ namespace TKTools
 		public void Clear()
 		{
 			textGraphics.Clear(System.Drawing.Color.Transparent);
+			UpdateTexture();
 		}
 
 		public void Write(string text, float x, float y, float size, StringAlignment hori = StringAlignment.Center, StringAlignment vert = StringAlignment.Center)
@@ -68,7 +91,9 @@ namespace TKTools
 			format.Alignment = hori;
 			format.LineAlignment = vert;
 
-			textGraphics.DrawString(text, f, Brushes.White, x, y, format);
+			textGraphics.DrawString(text, f, new SolidBrush(SystemColor), x, y, format);
+
+			UpdateTexture();
 		}
 
 		public Vector2 MeasureString(string text, float size)
@@ -87,7 +112,7 @@ namespace TKTools
 
 		public void UpdateTexture()
 		{
-			texture.UploadBitmap(textBitmap);
+			texture.UpdateBitmap(textBitmap);
 		}
 
 		public static implicit operator Texture(TextDrawer t)

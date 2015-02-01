@@ -71,6 +71,16 @@ namespace TKTools
 			bmp.UnlockBits(data);
 		}
 
+		public void UpdateBitmap(Bitmap bmp)
+		{
+			BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+			Bind();
+			GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, data.Width, data.Height, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+
+			bmp.UnlockBits(data);
+		}
+
 		public void Bind()
 		{
 			GL.BindTexture(TextureTarget.Texture2D, textureID);
