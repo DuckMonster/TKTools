@@ -10,6 +10,9 @@ namespace TKTools.AStar
 		class NodeList
 		{
 			Node[] nodeList;
+
+			public IEnumerable<>
+
 			int GetIndex(int x, int y)
 			{
 				return x + y * width;

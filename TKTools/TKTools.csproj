@@ -47,6 +47,8 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AStar\AStar.cs" />
+    <Compile Include="AStar\Node.cs" />
     <Compile Include="Color.cs" />
     <Compile Include="Mesh.cs" />
     <Compile Include="Polygon.cs" />
