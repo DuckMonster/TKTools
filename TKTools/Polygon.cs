@@ -2,12 +2,13 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
+using System;
 
 namespace TKTools
 {
-	public class Polygon
+	public class Polygon : IEnumerable<Vector2>
 	{
-		public List<Vector2> pointList = new List<Vector2>();
+		public List<Vector2> pointList = new List<Vector2>(50);
 
 		public RectangleF Bounds
 		{
@@ -36,7 +37,8 @@ namespace TKTools
 
 		public Polygon(params Vector2[] points)
 		{
-			pointList.AddRange(points);
+			if (points.Length > 0)
+				pointList.AddRange(points);
 		}
 
 		public void AddPoint(Polygon p)
@@ -47,6 +49,10 @@ namespace TKTools
 		public void AddPoint(Vector2 point)
 		{
 			pointList.Add(point);
+		}
+		public void AddPoint(IEnumerable<Vector2> points)
+		{
+			pointList.AddRange(points);
 		}
 
 		public Vector2 GetEdgeNormal(int n)
@@ -100,13 +106,58 @@ namespace TKTools
 			}
 		}
 
+		public Vector2 this[int i]
+		{
+			get
+			{
+				if (i < 0 || i > pointList.Count) throw new IndexOutOfRangeException();
+				return pointList[i];
+			}
+			set
+			{
+				if (i < 0 || i > pointList.Count) throw new IndexOutOfRangeException();
+				pointList[i] = value;
+			}
+		}
+
+		//Enumerator stuff
+
+		public
+
+		//
+
+		public static Polygon operator +(Polygon p, Polygon p2)
+		{
+			Polygon newPoly = new Polygon(p.pointList.ToArray());
+			newPoly.AddPoint(p2);
+
+			return newPoly;
+		}
+
+		public static Polygon operator +(Polygon p, IEnumerable<Vector2> points)
+		{
+			Polygon newPoly = new Polygon(p.pointList.ToArray());
+			newPoly.AddPoint(points);
+
+			return newPoly;
+		}
+
+		public static Polygon operator +(Polygon p, Vector2 point)
+		{
+			Polygon newPoly = new Polygon(p.pointList.ToArray());
+			newPoly.AddPoint(point);
+
+			return newPoly;
+		}
+
+		/*
 		public static Polygon operator *(Polygon p, float scale)
 		{
 			Polygon newPoly = new Polygon(p.pointList.ToArray());
 			newPoly.Scale(scale);
 
 			return newPoly;
-		}
+		}*/
 
 		public static implicit operator Vector2[](Polygon p)
 		{
