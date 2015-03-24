@@ -14,6 +14,48 @@ namespace TKTools
 			return ToDegrees((float)Math.Atan2(vec.Y, vec.X));
 		}
 
+		public static int Mod(int v, int max)
+		{
+			while (v < 0) v += max;
+			return v % max;
+		}
+
+		public static int Mod(int v, int min, int max)
+		{
+			while (v < min) v += (max - min);
+			while (v > max) v -= (max - min);
+
+			return v;
+		}
+
+		public static float Mod(float v, float max)
+		{
+			while (v < 0) v += max;
+			return v % max;
+		}
+
+		public static float Mod(float v, float min, float max)
+		{
+			while (v < min) v += (max - min);
+			while (v > max) v -= (max - min);
+
+			return v;
+		}
+
+		public static double Mod(double v, double max)
+		{
+			while (v < 0) v += max;
+			return v % max;
+		}
+
+		public static double Mod(double v, double min, double max)
+		{
+			while (v < min) v += (max - min);
+			while (v > max) v -= (max - min);
+
+			return v;
+		}
+
 		public static Vector2 GetAngleVector(float a)
 		{
 			return new Vector2((float)Math.Cos(ToRadians(a)), (float)Math.Sin(ToRadians(a)));

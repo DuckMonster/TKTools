@@ -6,7 +6,7 @@ using System;
 
 namespace TKTools
 {
-	public class Polygon : IEnumerable<Vector2>
+	public class Polygon
 	{
 		public List<Vector2> pointList = new List<Vector2>(50);
 
@@ -122,8 +122,6 @@ namespace TKTools
 
 		//Enumerator stuff
 
-		public
-
 		//
 
 		public static Polygon operator +(Polygon p, Polygon p2)
@@ -150,14 +148,13 @@ namespace TKTools
 			return newPoly;
 		}
 
-		/*
 		public static Polygon operator *(Polygon p, float scale)
 		{
 			Polygon newPoly = new Polygon(p.pointList.ToArray());
 			newPoly.Scale(scale);
 
 			return newPoly;
-		}*/
+		}
 
 		public static implicit operator Vector2[](Polygon p)
 		{
