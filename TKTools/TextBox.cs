@@ -20,7 +20,7 @@ namespace TKTools
 			Bottom = (1 << 3)
 		}
 
-		static readonly long updateRate = 700;
+		long updateRate = 700;
 
 		Font font;
 		string text;
@@ -63,12 +63,7 @@ namespace TKTools
 					case HorizontalAlignment.Right: sf.Alignment = StringAlignment.Far; break;
 				}
 
-				switch (VerticalAlign)
-				{
-					case VerticalAlignment.Center: sf.LineAlignment = StringAlignment.Center; break;
-					case VerticalAlignment.Top: sf.LineAlignment = StringAlignment.Near; break;
-					case VerticalAlignment.Bottom: sf.LineAlignment = StringAlignment.Far; break;
-				}
+				sf.LineAlignment = StringAlignment.Near;
 
 				return sf;
 			}
@@ -195,6 +190,18 @@ namespace TKTools
 			}
 		}
 
+		public long UpdateRate
+		{
+			get
+			{
+				return updateRate;
+			}
+			set
+			{
+				updateRate = value;
+			}
+		}
+
 		public TextBox() : this(new Font("Trebuchet MS", 12f)) { }
 		public TextBox(float size) : this(new Font("Trebuchet MS", size)) { }
 		public TextBox(Font f)
@@ -248,13 +255,15 @@ namespace TKTools
 			SizeF size = bitmapGraphics.MeasureString(text, font);
 
 			if (size.Width > width || size.Height > height)
-				CreateBitmap((int)size.Width, (int)size.Height);
+				CreateBitmap((int)size.Width + 6, (int)size.Height + 6);
 
 			StringFormat format = StringFormat;
 			Vector2 formatVector = AlignDrawVector;
 
 			bitmapGraphics.Clear(System.Drawing.Color.Transparent);
-			bitmapGraphics.DrawString(text, font, Brushes.White, formatVector.X, formatVector.Y, format);
+			bitmapGraphics.DrawString(text, font, Brushes.White, 3 + formatVector.X, 3, format);
+
+			bitmap.Save("temp.png");
 		}
 
 		void UpdateTexture()

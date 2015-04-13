@@ -47,6 +47,8 @@ namespace TKTools
 
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
 		}
 
 		void LoadTexture(string filename)
@@ -56,6 +58,20 @@ namespace TKTools
 				LoadTexture();
 				UploadBitmap(bmp);
 			}
+		}
+
+		public void BindToFrameBuffer(FrameBuffer buff)
+		{
+			Bind();
+			buff.Bind();
+
+			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, buff.Width, buff.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+			GL.FramebufferTexture2D(FramebufferTarget.FramebufferExt, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, textureID, 0);
+
+			width = buff.Width;
+			height = buff.Height;
+
+			buff.Release();
 		}
 
 		public void UploadBitmap(Bitmap bmp)
