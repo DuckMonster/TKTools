@@ -225,6 +225,7 @@ namespace TKTools
 
 			bitmap = new Bitmap(width, height);
 			bitmapGraphics = Graphics.FromImage(bitmap);
+			bitmapGraphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
 			this.width = width * 0.01f;
 			this.height = height * 0.01f;

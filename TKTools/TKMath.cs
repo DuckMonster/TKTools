@@ -71,6 +71,11 @@ namespace TKTools
 			return MathHelper.RadiansToDegrees(rad);
 		}
 
+		public static float Exp(float v)
+		{
+			return 1f - (float)Math.Pow(2.5f, -v * 8f);
+		}
+
 		public static float Exp(float v, float max)
 		{
 			return Exp(v, max, (float)Math.E);
