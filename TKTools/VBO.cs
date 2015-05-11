@@ -71,5 +71,12 @@ namespace TKTools
 			Bind();
 			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(ByteSize * data.Length), data, BufferUsageHint.StaticDraw);
 		}
+
+		public void BindToAttribute(int attribIndex)
+		{
+			Bind();
+			GL.EnableVertexAttribArray(attribIndex);
+			GL.VertexAttribPointer(attribIndex, Dimensions, VertexAttribPointerType.Float, false, 0, 0);
+		}
 	}
 }

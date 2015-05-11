@@ -92,13 +92,20 @@ namespace TKTools
 		Dictionary<string, int> uniformList = new Dictionary<string, int>();
 		public int programID;
 
+		public ShaderProgram(string vertexSource, string fragmentSource)
+		{
+			int vertexID = CreateShader(ShaderType.VertexShader, vertexSource, ref vertexLog);
+			int fragmentID = CreateShader(ShaderType.FragmentShader, fragmentSource, ref fragmentLog);
+			programID = CreateProgram(vertexID, fragmentID, ref programLog);
+		}
+
 		public ShaderProgram(string source)
 		{
-			string vertexSrc = "", fragmentSrc = "";
-			ReadFileCombined(source, ref vertexSrc, ref fragmentSrc);
+			string vertexSource = "", fragmentSource = "";
+			ReadFileCombined(source, ref vertexSource, ref fragmentSource);
 
-			int vertexID = CreateShader(ShaderType.VertexShader, vertexSrc, ref vertexLog);
-			int fragmentID = CreateShader(ShaderType.FragmentShader, fragmentSrc, ref fragmentLog);
+			int vertexID = CreateShader(ShaderType.VertexShader, vertexSource, ref vertexLog);
+			int fragmentID = CreateShader(ShaderType.FragmentShader, fragmentSource, ref fragmentLog);
 			programID = CreateProgram(vertexID, fragmentID, ref programLog);
 		}
 
@@ -133,6 +140,11 @@ namespace TKTools
 			GL.DeleteShader(fragment);
 
 			return id;
+		}
+
+		public void SetAttribute(string name, int ID)
+		{
+			GL.BindAttribLocation(programID, ID, name);
 		}
 
 		public int GetAttribute(string name)
