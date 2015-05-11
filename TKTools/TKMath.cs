@@ -1,7 +1,7 @@
 ﻿using System;
 using OpenTK;
 
-namespace TKTools
+namespace TKTools.Mathematics
 {
 	public static class TKMath
 	{

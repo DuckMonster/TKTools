@@ -160,12 +160,12 @@ namespace TKTools.AStar
 						rect.Y + (rect.Height * ((float)y / nodeCountH))
 						);
 
-					Polygon colPoly = new Polygon(
+					Polygon colPoly = new Polygon( new Vector2[] {
 						pos + new Vector2(0.5f / resolution, 0.5f / resolution),
 						pos + new Vector2(0.5f / resolution, -0.5f / resolution),
 						pos + new Vector2(-0.5f / resolution, -0.5f / resolution),
 						pos + new Vector2(-0.5f / resolution, 0.5f / resolution)
-						);
+					});
 
 					bool solid = false;
 					foreach(Polygon p in solids)

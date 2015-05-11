@@ -3,11 +3,42 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 using System;
+using System.Collections;
 
 namespace TKTools
 {
-	public class Polygon
+	public class Polygon : IEnumerable
 	{
+		class PolyEnumerator : IEnumerator
+		{
+			Vector2[] pointList;
+			int position = -1;
+
+			public PolyEnumerator(Vector2[] list)
+			{
+				pointList = list;
+			}
+
+			public bool MoveNext()
+			{
+				position++;
+				return (position < pointList.Length);
+			}
+
+			public void Reset()
+			{
+				position = -1;
+			}
+
+			public object Current
+			{
+				get
+				{
+					return pointList[position];
+				}
+			}
+		}
+
 		public List<Vector2> pointList = new List<Vector2>(50);
 
 		public RectangleF Bounds
@@ -35,10 +66,12 @@ namespace TKTools
 			}
 		}
 
-		public Polygon(params Vector2[] points)
+		public Polygon()
 		{
-			if (points.Length > 0)
-				pointList.AddRange(points);
+		}
+		public Polygon(IEnumerable<Vector2> points)
+		{
+			pointList.AddRange(points);
 		}
 
 		public void AddPoint(Polygon p)
@@ -60,7 +93,7 @@ namespace TKTools
 			return (pointList[n % pointList.Count] - pointList[(n + 1) % pointList.Count]).PerpendicularRight;
 		}
 
-		public bool Intersects(Vector2 point) { return Intersects(new Polygon(point)); }
+		public bool Intersects(Vector2 point) { return Intersects(new Polygon(new Vector2[] { point })); }
 		public bool Intersects(Polygon p)
 		{
 			if (pointList.Count > 1)
@@ -121,7 +154,10 @@ namespace TKTools
 		}
 
 		//Enumerator stuff
-
+		public IEnumerator GetEnumerator()
+		{
+			return new PolyEnumerator(pointList.ToArray());
+		}
 		//
 
 		public static Polygon operator +(Polygon p, Polygon p2)
