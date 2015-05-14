@@ -1,62 +1,107 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using OpenTK;
+using OpenTK.Graphics.OpenGL;
+using System.Collections.Generic;
+using TKTools.Context;
 
 namespace TKTools
 {
 	public class FrameBuffer
 	{
-		int width, height;
-		Texture texture;
+		internal static FrameBuffer activeBuffer;
+		internal static void ReleaseActive()
+		{
+			if (activeBuffer != null)
+				activeBuffer.Release();
+		}
 
+		internal static void ContextSizeChanged()
+		{
+			foreach (FrameBuffer b in bufferList)
+				b.UpdateSize();
+		}
+
+		private static List<FrameBuffer> bufferList = new List<FrameBuffer>();
+
+		int width, height;
 
 		public int Width { get { return width; } }
 		public int Height { get { return height; } }
 
-		int frameBufferID;
-		int stencilBufferID;
+		int bufferHandle;
 
+		Texture texture;
 		public Texture Texture
 		{
 			get { return texture; }
+			set
+			{
+				texture = value;
+				if (texture != null)
+					texture.BindToFrameBuffer(this);
+			}
 		}
 
-		public FrameBuffer(int width, int height)
+		RenderBuffer renderBuffer;
+		internal RenderBuffer RenderBuffer
 		{
-			this.width = width;
-			this.height = height;
-
-			frameBufferID = GL.GenFramebuffer();
-			texture = new Texture();
-			texture.BindToFrameBuffer(this);
-			GenStencil();
+			get { return renderBuffer; }
+			set
+			{
+				renderBuffer = value;
+				if (renderBuffer != null)
+					renderBuffer.BindToFrameBuffer(this);
+			}
 		}
 
-		void GenStencil()
+		public FrameBuffer() : this(null, null) { }
+		public FrameBuffer(Texture t) : this(t, null) { }
+		public FrameBuffer(Texture t, RenderBuffer rb)
 		{
-			stencilBufferID = GL.GenRenderbuffer();
+			UpdateSize();
 
-			GL.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, stencilBufferID);
-			GL.RenderbufferStorage(RenderbufferTarget.RenderbufferExt, RenderbufferStorage.Depth24Stencil8, width, height);
+			bufferHandle = GL.GenFramebuffer();
 
-			GL.BindFramebuffer(FramebufferTarget.FramebufferExt, frameBufferID);
-			GL.FramebufferRenderbuffer(FramebufferTarget.FramebufferExt, FramebufferAttachment.DepthStencilAttachment, RenderbufferTarget.RenderbufferExt, stencilBufferID);
-			GL.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
+			Texture = t;
+			RenderBuffer = rb;
+
+			bufferList.Add(this);
+		}
+
+		void UpdateSize()
+		{
+			this.width = Context.Context.activeContext.ClientSize.Width;
+			this.height = Context.Context.activeContext.ClientSize.Height;
+
+			if (Texture != null) Texture.BindToFrameBuffer(this);
+			if (RenderBuffer != null) RenderBuffer.BindToFrameBuffer(this);
 		}
 
 		public void Dispose()
 		{
-			GL.DeleteFramebuffer(frameBufferID);
+			GL.DeleteFramebuffer(bufferHandle);
 			texture.Dispose();
+
+			bufferList.Remove(this);
 		}
 
 		public void Bind()
 		{
-			GL.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, stencilBufferID);
-			GL.BindFramebuffer(FramebufferTarget.FramebufferExt, frameBufferID);
+			GL.BindFramebuffer(FramebufferTarget.FramebufferExt, bufferHandle);
+			activeBuffer = this;
 		}
 
 		public void Release()
 		{
 			GL.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
+			activeBuffer = null;
+		}
+
+		public void Draw()
+		{
+			GL.Disable(EnableCap.DepthTest);
+
+			Release();
+			Texture.DrawToScreen();
 		}
 	}
 }

@@ -3,11 +3,86 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using TKTools.Context;
+using System.Collections.Generic;
 
 namespace TKTools
 {
 	public class Texture : IDisposable
 	{
+		private const string screenVertexSource = @"
+#version 330
+in vec2 vertexPosition;
+in vec2 vertexUV;
+
+out vec2 uv;
+
+void main() {
+	uv = vertexUV;
+	gl_Position = vec4(vertexPosition, 0.0, 1.0);
+}
+";
+		private const string screenFragmentSource = @"
+#version 330
+in vec2 uv;
+uniform sampler2D texture;
+
+out vec4 fragment;
+
+void main() {
+	fragment = texture2D(texture, uv);
+	//fragment = vec4(1.0, 0.0, 0.0, 1.0);
+}
+";
+
+		private static ShaderProgram screenProgram;
+		private static VAO screenVAO;
+		private static VBO<Vector2> vboVertexPosition, vboVertexUV;
+
+		internal static void InitVAO()
+		{
+			screenProgram = new ShaderProgram(screenVertexSource, screenFragmentSource);
+			screenProgram.SetAttribute("vertexPosition", Mesh.VERTEX_POSITION_ID);
+			screenProgram.SetAttribute("vertexUV", Mesh.VERTEX_UV_ID);
+
+			screenVAO = new VAO();
+
+			vboVertexPosition = new VBO<Vector2>();
+			vboVertexPosition.UploadData(new Vector2[] {
+				new Vector2(-1, -1),
+				new Vector2(1, -1),
+				new Vector2(1, 1),
+				new Vector2(-1, 1)
+			});
+
+			vboVertexUV = new VBO<Vector2>();
+			vboVertexUV.UploadData(new Vector2[] {
+				new Vector2(0, 0),
+				new Vector2(1, 0),
+				new Vector2(1, 1),
+				new Vector2(0, 1)
+			});
+
+			vboVertexPosition.BindToVAO(screenVAO);
+			vboVertexPosition.BindToAttribute(Mesh.VERTEX_POSITION_ID);
+			vboVertexUV.BindToVAO(screenVAO);
+			vboVertexUV.BindToAttribute(Mesh.VERTEX_UV_ID);
+		}
+
+		internal static void DrawTextureToScreen(Texture t) { DrawTextureToScreen(new Texture[] { t }, screenProgram); }
+		internal static void DrawTextureToScreen(Texture t, ShaderProgram program) { DrawTextureToScreen(new Texture[] { t }, program); }
+		internal static void DrawTextureToScreen(Texture[] textures) { DrawTextureToScreen(textures, screenProgram); }
+		internal static void DrawTextureToScreen(Texture[] textures, ShaderProgram program)
+		{
+			GL.Disable(EnableCap.DepthTest);
+
+			program.Use();
+			textures[0].Bind();
+			screenVAO.Bind();
+
+			GL.DrawArrays(PrimitiveType.Quads, 0, 4);
+		}
+
 		int textureID;
 		int width, height;
 
@@ -55,6 +130,8 @@ namespace TKTools
 		{
 			using (Bitmap bmp = new Bitmap(filename))
 			{
+				bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
 				LoadTexture();
 				UploadBitmap(bmp);
 			}
@@ -101,5 +178,8 @@ namespace TKTools
 		{
 			GL.BindTexture(TextureTarget.Texture2D, textureID);
 		}
+
+		public void DrawToScreen() { DrawTextureToScreen(this); }
+		public void DrawToScreen(ShaderProgram p) { DrawTextureToScreen(this, p); }
 	}
 }

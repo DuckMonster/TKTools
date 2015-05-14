@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace TKTools.Context
 {
-	class Mesh
+	public class Mesh
 	{
 		const string vertexSource =
 			@"
@@ -25,8 +25,8 @@ void main() {
 	gl_Position = projection * view * model * vec4(vertexPosition, 1.0);
 }";
 
-const string fragmentSource = 
-			@"
+		const string fragmentSource =
+					@"
 #version 330
 
 uniform sampler2D texture;
@@ -36,6 +36,7 @@ uniform bool fillColor;
 
 in vec2 uv;
 out vec4 fragment;
+
 
 void main() {
 	vec4 finalColor;
@@ -66,13 +67,89 @@ void main() {
 			StandardShader.SetAttribute("vertexPosition", VERTEX_POSITION_ID);
 			StandardShader.SetAttribute("vertexUV", VERTEX_UV_ID);
 		}
-	}
-	public class Mesh<T> where T : struct
-	{
-		List<T> vertices = new List<T>();
 
-		int vao;
-		VBO<T> vertexPosition, vertexUV;
+		public static Mesh CreateFromTexture(Texture t)
+		{
+			Mesh m = new Mesh(
+				new Vector3[] {
+					new Vector3(-0.5f, -0.5f, 0f),
+					new Vector3(-0.5f, 0.5f, 0f),
+					new Vector3(0.5f, 0.5f, 0f),
+					new Vector3(0.5f, -0.5f, 0f)
+				},
+
+				new Vector2[] {
+					new Vector2(0f, 0f),
+					new Vector2(0f, 1f),
+					new Vector2(1f, 1f),
+					new Vector2(1f, 0f)
+				});
+
+			m.Texture = t;
+			return m;
+		}
+
+		List<Vector3> vertices = new List<Vector3>();
+		List<Vector2> uv = new List<Vector2>();
+
+		VAO vao;
+		VBO<Vector3> vertexPosition;
+		VBO<Vector2> vertexUV;
+
+		Color color = Color.White;
+		public Color Color
+		{
+			get { return color; }
+			set { color = value; }
+		}
+
+		bool textureEnabled = true;
+		public bool TextureEnabled
+		{
+			get { return textureEnabled; }
+			set { textureEnabled = value; }
+		}
+
+		Texture texture = null;
+		public Texture Texture
+		{
+			get { return texture; }
+			set { texture = value; }
+		}
+
+		bool fillColor = false;
+		public bool FillColor
+		{
+			get { return fillColor; }
+			set { fillColor = value; }
+		}
+
+		Matrix4 modelMatrix = Matrix4.Identity;
+		public Matrix4 ModelMatrix
+		{
+			get { return modelMatrix; }
+			set { modelMatrix = value; }
+		}
+
+		public Vector3[] Vertices
+		{
+			get { return vertices.ToArray(); }
+			set
+			{
+				vertices.Clear();
+				vertices.AddRange(value);
+			}
+		}
+
+		public Vector2[] UV
+		{
+			get { return uv.ToArray(); }
+			set
+			{
+				uv.Clear();
+				uv.AddRange(value);
+			}
+		}
 
 		ShaderProgram Program
 		{
@@ -83,49 +160,115 @@ void main() {
 		{
 			GenerateBuffers();
 		}
-		public Mesh(IEnumerable<T> points)
+		public Mesh(IEnumerable<Vector3> points)
 			:this()
 		{
 			AddVertices(points);
 		}
+		public Mesh(IEnumerable<Vector3> points, IEnumerable<Vector2> uvs)
+			:this()
+		{
+			AddVertices(points, uvs);
+		}
+
+		public void Dispose()
+		{
+			vertexPosition.Dispose();
+			vertexUV.Dispose();
+		}
 
 		void GenerateBuffers()
 		{
-			vao = GL.GenVertexArray();
-			vertexPosition = new VBO<T>();
-			vertexUV = new VBO<T>();
+			vao = new VAO();
+			vertexPosition = new VBO<Vector3>();
+			vertexUV = new VBO<Vector2>();
+
+			vertexPosition.BindToVAO(vao);
+			vertexUV.BindToVAO(vao);
 		}
 
-		void AddVertices(IEnumerable<T> vert)
+		void AddVertices(IEnumerable<Vector3> vert)
 		{
 			vertices.AddRange(vert);
 			UploadVertices();
 		}
-
-		void BindVAO()
+		void AddVertices(IEnumerable<Vector3> vert, IEnumerable<Vector2> uvs)
 		{
-			GL.BindVertexArray(vao);
+			vertices.AddRange(vert);
+			uv.AddRange(uvs);
+			UploadVertices();
 		}
 
 		void UploadVertices()
 		{
-			BindVAO();
-			vertexPosition.UploadData(vertices.ToArray());
-			vertexPosition.BindToAttribute(Mesh.VERTEX_POSITION_ID);
-			vertexPosition.BindToAttribute(Mesh.VERTEX_UV_ID);
+			vao.Bind();
+			if (uv.Count == vertices.Count)
+			{
+				vertexPosition.UploadData(vertices.ToArray());
+				vertexUV.UploadData(uv.ToArray());
+				vertexPosition.BindToAttribute(Mesh.VERTEX_POSITION_ID);
+				vertexUV.BindToAttribute(Mesh.VERTEX_UV_ID);
+			} else
+			{
+				vertexPosition.UploadData(vertices.ToArray());
+				vertexPosition.BindToAttribute(Mesh.VERTEX_POSITION_ID);
+				vertexPosition.BindToAttribute(Mesh.VERTEX_UV_ID);
+			}
+		}
+
+		public void Reset()
+		{
+			modelMatrix = Matrix4.Identity;
+		}
+
+		public void Translate(float x, float y) { Translate(new Vector3(x, y, 0f)); }
+		public void Translate(float x, float y, float z) { Translate(new Vector3(x, y, z)); }
+		public void Translate(Vector2 d) { Translate(new Vector3(d)); }
+		public void Translate(Vector3 d)
+		{
+			modelMatrix = Matrix4.CreateTranslation(d) * modelMatrix;
+		}
+
+		public void Scale(float s) { Scale(new Vector3(s)); }
+		public void Scale(float x, float y) { Scale(new Vector3(x, y, 1f)); }
+		public void Scale(float x, float y, float z) { Scale(new Vector3(x, y, z)); }
+		public void Scale(Vector2 s) { Scale(new Vector3(s.X, s.Y, 1f)); }
+		public void Scale(Vector3 s)
+		{
+			modelMatrix = Matrix4.CreateScale(s) * modelMatrix;
+		}
+
+		public void RotateX(float d)
+		{
+			modelMatrix = Matrix4.CreateRotationX(d) * modelMatrix;
+		}
+		public void RotateY(float d)
+		{
+			modelMatrix = Matrix4.CreateRotationY(d) * modelMatrix;
+		}
+		public void RotateZ(float d)
+		{
+			modelMatrix = Matrix4.CreateRotationZ(d) * modelMatrix;
 		}
 
 		public void Draw()
 		{
-			BindVAO();
+			vao.Bind();
 
 			Program["projection"].SetValue(Camera.activeCamera.Projection);
 			Program["view"].SetValue(Camera.activeCamera.View);
-			Program["model"].SetValue(Matrix4.Identity);
+			Program["model"].SetValue(modelMatrix);
 
-			Program["usingTexture"].SetValue(false);
-			Program["color"].SetValue(Color.White);
-			Program["fillColor"].SetValue(true);
+			if (textureEnabled && texture != null)
+			{
+				Program["usingTexture"].SetValue(true);
+				texture.Bind();
+			}
+			else
+				Program["usingTexture"].SetValue(false);
+
+			Program["color"].SetValue(Color);
+			Program["fillColor"].SetValue(FillColor);
 
 			GL.DrawArrays(PrimitiveType.Polygon, 0, 4);
 		}

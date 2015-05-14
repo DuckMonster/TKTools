@@ -8,7 +8,7 @@ namespace TKTools
 {
 	public class VBO<T> : IDisposable where T : struct
 	{
-		protected int vbo_ID;
+		protected int vboHandle;
 		List<T> vertexList = new List<T>();
 		int dimensions = 0;
 
@@ -43,17 +43,23 @@ namespace TKTools
 
 		public VBO()
 		{
-			vbo_ID = GL.GenBuffer();
+			vboHandle = GL.GenBuffer();
 		}
 
 		public void Dispose()
 		{
-			GL.DeleteBuffer(vbo_ID);
+			GL.DeleteBuffer(vboHandle);
 		}
 
 		public void Bind()
 		{
-			GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_ID);
+			GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
+		}
+
+		public void BindToVAO(VAO vao)
+		{
+			vao.Bind();
+			Bind();
 		}
 
 		public void UploadData(T[] data)

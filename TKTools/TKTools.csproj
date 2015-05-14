@@ -52,23 +52,24 @@
     <Compile Include="Color.cs" />
     <Compile Include="Context\Camera.cs" />
     <Compile Include="Context\Context.cs" />
+    <Compile Include="Context\Filter\Filter.cs" />
+    <Compile Include="Context\Filter\FilterBlur.cs" />
+    <Compile Include="Context\Filter\FilterCrazy.cs" />
+    <Compile Include="Context\Filter\FilterCrazy2.cs" />
+    <Compile Include="Context\Filter\FilterSaturation.cs" />
     <Compile Include="Context\Mesh.cs" />
     <Compile Include="FrameBuffer.cs" />
-    <Compile Include="Mesh.cs" />
     <Compile Include="Polygon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RenderBuffer.cs" />
     <Compile Include="ShaderProgram.cs" />
     <Compile Include="Sound.cs" />
     <Compile Include="TextDrawer.cs" />
     <Compile Include="TextBox.cs" />
     <Compile Include="Texture.cs" />
     <Compile Include="TKMath.cs" />
+    <Compile Include="VAO.cs" />
     <Compile Include="VBO.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Context\StandardShaders\StandardShader.cpp">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

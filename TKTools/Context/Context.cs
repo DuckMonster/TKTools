@@ -20,6 +20,7 @@ namespace TKTools.Context
 		{
 			activeContext = this;
 			Mesh.CompileStandardShader();
+			Texture.InitVAO();
 		}
 
 		protected override void OnResize(EventArgs e)
@@ -28,6 +29,7 @@ namespace TKTools.Context
 
 			GL.Viewport(ClientRectangle);
 			if (Camera.activeCamera != null) Camera.activeCamera.UpdateProjection();
+			FrameBuffer.ContextSizeChanged();
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -47,7 +49,13 @@ namespace TKTools.Context
 			base.OnRenderFrame(e);
 
 			GL.Clear(ClearBufferMask.ColorBufferBit);
+
+			Camera.activeCamera.ClearBuffer();
+			Camera.activeCamera.BindBuffer();
+
 			OnRender();
+
+			Camera.activeCamera.Draw();
 
 			SwapBuffers();
 		}
