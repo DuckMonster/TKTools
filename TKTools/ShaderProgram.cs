@@ -37,6 +37,11 @@ namespace TKTools
 				GL.UseProgram(program.programID);
 				GL.Uniform1(ID, val);
 			}
+			public void SetValue(float[] val)
+			{
+				GL.UseProgram(program.programID);
+				GL.Uniform1(ID, val.Length, val);
+			}
 			public void SetValue(double val)
 			{
 				GL.UseProgram(program.programID);

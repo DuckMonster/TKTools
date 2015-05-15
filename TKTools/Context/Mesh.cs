@@ -270,7 +270,7 @@ void main() {
 			Program["color"].SetValue(Color);
 			Program["fillColor"].SetValue(FillColor);
 
-			GL.DrawArrays(PrimitiveType.Polygon, 0, 4);
+			GL.DrawArrays(PrimitiveType.Quads, 0, 4);
 		}
 	}
 }

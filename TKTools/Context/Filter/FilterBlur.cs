@@ -1,10 +1,11 @@
 ﻿using OpenTK;
+using System;
 
 namespace TKTools.Context.Filter
 {
 	public class FilterBlur : Filter
 	{
-		class BlurHori : Filter
+		class BlurDir : Filter
 		{
 			private const string fragment = @"
 #version 330
@@ -12,50 +13,110 @@ uniform sampler2D texture;
 uniform int textureWidth;
 uniform int textureHeight;
 
-uniform int magnitude;
-uniform float weigth;
+uniform vec2 direction;
+uniform int kernel;
+uniform float opacity;
+uniform float weights[50];
 
 in vec2 uv;
 
 out vec4 fragment;
 
 void main() {
-	vec2 pixelUV = vec2(1.0 / textureWidth, 1.0 / textureHeight);
-	
-	vec4 total = vec4(0.0, 0.0, 0.0, 0.0);
-	for(int i=-magnitude; i<=magnitude; i++) {
-		total += texture2D(texture, uv + vec2(pixelUV.x, 0.0) * i);
+	vec2 pixelUV = vec2(1.0 / textureWidth, 1.0 / textureHeight) * direction;
+	vec4 total = vec4(0, 0, 0, 0);
+
+	for(int i=-kernel; i<=kernel; i++) {
+		total += texture2D(texture, uv + pixelUV * i) * weights[int(abs(float(i)))];
 	}
 
-	total /= (magnitude * 2) + 1;
+	//total = texture2D(texture, vec2(uv + pixelUV * kernel));
 
+	//fragment = mix(texture2D(texture, uv), total, opacity);
 	fragment = total;
+
+	/*
+	int k = int((uv.x * 2 - 1) * kernel);
+	//if (k < 0) k *= -1;
+	k = int(abs(float(k)));
+	fragment = vec4(weights[k], 0.0, 0.0, 1.0);
+	*/
 }
 ";
-			int magnitude;
-			public int Magnitude
+
+			Vector2 direction;
+			public Vector2 Direction
 			{
-				get { return magnitude; }
+				get { return direction; }
 				set
 				{
-					magnitude = value;
-					program["magnitude"].SetValue(magnitude);
+					direction = value;
+					program["direction"].SetValue(direction);
 				}
 			}
 
-			float weigth;
-			public float Weigth
+			int kernel;
+			public int Kernel
 			{
-				get { return weigth; }
+				get { return kernel; }
 				set
 				{
-					weigth = value;
-					program["weigth"].SetValue(weigth);
+					kernel = value;
+					program["kernel"].SetValue(kernel);
 				}
 			}
 
-			public BlurHori() : base(fragment)
+			float opacity;
+			public float Opacity
 			{
+				get { return opacity; }
+				set
+				{
+					opacity = value;
+					program["opacity"].SetValue(opacity);
+				}
+			}
+
+			float[] weights;
+			float exponent;
+			public float Exponent
+			{
+				get { return exponent; }
+				set
+				{
+					exponent = value;
+					CalculateWeights();
+				}
+			}
+
+			public BlurDir(Vector2 dir)
+				: base(fragment)
+			{
+				Direction = dir;
+				Opacity = 1f;
+				Kernel = 15;
+				Exponent = 0.2f;
+			}
+
+			void CalculateWeights()
+			{
+				weights = new float[kernel + 1];
+				float total = 0f;
+
+				for(int i=0; i< weights.Length; i++)
+				{
+					float w = (float)Math.Exp(-exponent * i);
+
+					weights[i] = w;
+					total += i == 0 ? w : w*2;
+				}
+
+				for (int i = 0; i < weights.Length; i++)
+				{
+					weights[i] /= total;
+                }
+
+				program["weights"].SetValue(weights);
 			}
 
 			public override void Apply(Texture t)
@@ -66,108 +127,74 @@ void main() {
 			}
 		}
 
-		class BlurVert : Filter
+		BlurDir blurHori, blurVert;
+		int kernel;
+		public int Kernel
 		{
-			private const string fragment = @"
-#version 330
-uniform sampler2D texture;
-uniform int textureWidth;
-uniform int textureHeight;
-
-uniform int magnitude;
-uniform float weigth;
-
-in vec2 uv;
-
-out vec4 fragment;
-
-void main() {
-	vec2 pixelUV = vec2(1.0 / textureWidth, 1.0 / textureHeight);
-	
-	vec4 total = vec4(0.0, 0.0, 0.0, 0.0);
-	for(int i=-5; i<=5; i++) {
-		total += texture2D(texture, uv + vec2(0.0, pixelUV.y) * i);
-	}
-
-	total /= 11.0;
-
-	fragment = total;
-}
-";
-			int magnitude;
-			public int Magnitude
-			{
-				get { return magnitude; }
-				set
-				{
-					magnitude = value;
-					program["magnitude"].SetValue(magnitude);
-				}
-			}
-
-			float weigth;
-			public float Weight
-			{
-				get { return weigth; }
-				set
-				{
-					weigth = value;
-					program["weigth"].SetValue(weigth);
-				}
-			}
-
-			public BlurVert() : base(fragment)
-			{
-			}
-
-			public override void Apply(Texture t)
-			{
-				program["textureWidth"].SetValue(t.Width);
-				program["textureHeight"].SetValue(t.Height);
-				base.Apply(t);
-			}
-		}
-
-		BlurHori blurHori;
-		BlurVert blurVert;
-		int magnitude;
-		public int Magnitude
-		{
-			get { return magnitude; }
+			get { return kernel; }
 			set
 			{
-				magnitude = value;
-				blurHori.Magnitude = value;
-				blurVert.Magnitude = value;
+				kernel = value;
+				blurHori.Kernel = value;
+				blurVert.Kernel = value;
 			}
 		}
 
-		float weigth;
-		public float Weigth
+		float opactity;
+		public float Opacity
 		{
-			get { return weigth; }
+			get { return opactity; }
 			set
 			{
-				weigth = MathHelper.Clamp(value, 0f, 1f);
-				blurHori.Weigth = weigth;
-				blurVert.Weight = weigth;
+				opactity = MathHelper.Clamp(value, 0f, 1f);
+				blurHori.Opacity = opactity;
+				blurVert.Opacity = opactity;
 			}
 		}
 
-		public FilterBlur() : base()
+		float exponent;
+		public float Exponent
 		{
-			blurHori = new BlurHori();
-			blurVert = new BlurVert();
+			get { return exponent; }
+			set
+			{
+				exponent = value;
+				blurHori.Exponent = exponent;
+				blurVert.Exponent = exponent;
+			}
+		}
+
+		int repeat = 1;
+		public int Repeat
+		{
+			get { return repeat; }
+			set { repeat = value; }
+		}
+
+		public FilterBlur() : this(0.15f, 15, 1) { }
+		public FilterBlur(float exponent) : this(exponent, 15, 1) { }
+		public FilterBlur(float exponent, int kernel) :this(exponent, kernel, 1) { }
+		public FilterBlur(float exponent, int kernel, int repeat) : base()
+		{
+			blurHori = new BlurDir(new Vector2(1, 0));
+			blurVert = new BlurDir(new Vector2(0, 1));
+
+			Exponent = exponent;
+			Kernel = kernel;
+			Repeat = repeat;
 		}
 
 		public override void Apply(Texture t)
 		{
 			Texture finalText = t;
 
-			blurHori.Apply(finalText);
-			finalText = blurHori.OutputTexture;
-			blurVert.Apply(finalText);
-			finalText = blurVert.OutputTexture;
+			for (int i = 0; i < repeat; i++)
+			{
+				blurVert.Apply(finalText);
+				finalText = blurVert.OutputTexture;
+				blurHori.Apply(finalText);
+				finalText = blurHori.OutputTexture;
+			}
 
 			base.Apply(finalText);
 		}
