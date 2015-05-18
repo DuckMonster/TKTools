@@ -2,6 +2,7 @@
 using OpenTK;
 using System.Drawing;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Input;
 
 namespace TKTools.Context
 {
@@ -38,9 +39,18 @@ namespace TKTools.Context
 			GL.ClearColor(0f, 0f, 0f, 1f);
 		}
 
+		int mouseX, mouseY;
+		protected override void OnMouseMove(MouseMoveEventArgs e)
+		{
+			mouseX = e.X;
+			mouseY = e.Y;
+		}
+
 		protected override void OnUpdateFrame(FrameEventArgs e)
 		{
 			base.OnUpdateFrame(e);
+			Input.Keyboard.Update();
+			Input.Mouse.Update(mouseX, mouseY, this);
 			OnUpdate();
 		}
 

@@ -57,6 +57,7 @@
     <Compile Include="Context\Filter\FilterCrazy.cs" />
     <Compile Include="Context\Filter\FilterCrazy2.cs" />
     <Compile Include="Context\Filter\FilterSaturation.cs" />
+    <Compile Include="Context\Input\Input.cs" />
     <Compile Include="Context\Mesh.cs" />
     <Compile Include="FrameBuffer.cs" />
     <Compile Include="Polygon.cs" />

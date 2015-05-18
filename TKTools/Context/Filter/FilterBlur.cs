@@ -63,6 +63,7 @@ void main() {
 				{
 					kernel = value;
 					program["kernel"].SetValue(kernel);
+					CalculateWeights();
 				}
 			}
 
