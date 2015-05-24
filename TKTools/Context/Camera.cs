@@ -19,6 +19,9 @@ namespace TKTools.Context
 		FrameBuffer frameBuffer;
 		List<Filter.Filter> filterList = new List<Filter.Filter>();
 
+		float ratio;
+		float fieldOfView = 45f;
+
 		public Vector3 Position
 		{
 			get { return position; }
@@ -41,6 +44,11 @@ namespace TKTools.Context
 			}
 		}
 
+		internal float Ratio
+		{
+			get { return ratio; }
+		}
+
 		public Camera() : this(new Vector3(0, 0, 2f), Vector3.Zero) { }
 		public Camera(Vector3 pos, Vector3 tar)
 		{
@@ -57,6 +65,19 @@ namespace TKTools.Context
 
 		bool viewDirty = true;
 		Matrix4 projection, view;
+
+		public Ray GetRayFromPosition(Vector2 screenPos)
+		{
+			if (screenPos.X < -1 * Ratio || screenPos.X > 1 * Ratio
+				|| screenPos.Y < -1 || screenPos.Y > 1)
+				return new Ray(Vector3.Zero, Vector3.Zero);
+
+			float zPlane = 1f / (float)Math.Tan(TKMath.ToRadians(fieldOfView) / 2);
+
+			Vector3 r = new Vector3(screenPos.X * Ratio, screenPos.Y, -zPlane);
+
+			return new Ray(Position + r, r.Normalized());
+		}
 
 		public void AddFilter(Filter.Filter filter)
 		{
@@ -105,15 +126,30 @@ namespace TKTools.Context
 		}
 		internal void UpdateProjection()
 		{
-			float ratio = (float)Context.activeContext.Size.Height / Context.activeContext.Size.Width;
+			ratio = Context.activeContext.AspectRatio;
 
 			if (Orthogonal)
-				projection = Matrix4.CreateOrthographicOffCenter(-4f, 4f, -4f * ratio, 4f * ratio, 1f, 10f);
+				projection = Matrix4.CreateOrthographicOffCenter(-4f * ratio, 4f * ratio, -4f, 4f, 1f, 10f);
 			else
-				projection = Matrix4.CreatePerspectiveFieldOfView(TKMath.ToRadians(45f), 1f / ratio, 1f, 50f);
+			{
+				float v = (float)Math.Tan(TKMath.ToRadians(45f) / 2);
+				float n = 1f;
+				float f = 50f;
+
+				projection = new Matrix4(
+					1 / (ratio * v), 0f, 0f, 0f,
+					0f, 1 / v, 0f, 0f,
+					0f, 0f, (-n - f)/-(n - f), (2 * f * n) / (n - f),
+					0f, 0f, -1f, 0f
+					);
+
+				projection.Transpose();
+
+				//projection = Matrix4.CreatePerspectiveFieldOfView(TKMath.ToRadians(45f), ratio, 1f, 50f);
+			}
 		}
 
-		internal Matrix4 View
+		public Matrix4 View
 		{
 			get
 			{
@@ -121,7 +157,7 @@ namespace TKTools.Context
 				return view;
 			}
 		}
-		internal Matrix4 Projection
+		public Matrix4 Projection
 		{
 			get { return projection; }
 		}

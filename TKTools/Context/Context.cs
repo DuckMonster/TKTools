@@ -16,6 +16,11 @@ namespace TKTools.Context
 		public event UpdateEventHandler OnUpdate;
 		public event RenderEventHandler OnRender;
 
+		public float AspectRatio
+		{
+			get { return (float)Size.Width / Size.Height; }
+		}
+
 		public Context()
 			:base()
 		{

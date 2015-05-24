@@ -114,8 +114,8 @@ namespace TKTools.Context.Input
 		internal static TKMouseState current, previous;
 		internal static void Update(int x, int y, GameWindow w)
 		{
-			float xx = (float)x / w.ClientSize.Width - 0.5f;
-			float yy = (float)y / w.ClientSize.Height - 0.5f;
+			float xx = (x / (float)w.ClientSize.Width - 0.5f) * 2f;
+			float yy = (y / (float)w.ClientSize.Height - 0.5f) * -2f;
 
 			previous = current;
 			current = new TKMouseState(xx, yy, OpenTK.Input.Mouse.GetState());
