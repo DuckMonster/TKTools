@@ -33,17 +33,63 @@ namespace TKTools.Context.Input
 
 	public class MouseWatch
 	{
+		Camera perspectiveCamera;
+		float planeDistance = 0f;
+
+		public Camera Perspective
+		{
+			get { return perspectiveCamera; }
+			set { perspectiveCamera = value; }
+		}
+
+		public float PlaneDistance
+		{
+			get { return planeDistance; }
+			set { planeDistance = value; }
+		}
+
 		public float X
 		{
-			get { return Mouse.current.X; }
+			get { return Position.X; }
 		}
 		public float Y
 		{
-			get { return Mouse.current.Y; }
+			get { return Position.Y; }
 		}
-		public Vector2 Position
+		public Vector3 Position
 		{
-			get { return new Vector2(X, Y); }
+			get
+			{
+				if (perspectiveCamera == null)
+					return new Vector3(ScreenPosition);
+				else
+				{
+					Ray r = ScreenRay;
+
+					Vector3 s = ScreenRay.Start;
+					Vector3 d = ScreenRay.Direction;
+
+					float z = s.Z - perspectiveCamera.Position.Z;
+					d /= Math.Abs(d.Z);
+
+					return s + d * (planeDistance + z);
+				}
+			}
+		}
+		public Vector2 ScreenPosition
+		{
+			get
+			{
+				return new Vector2(Mouse.current.X, Mouse.current.Y);
+			}
+		}
+
+		public Ray ScreenRay
+		{
+			get
+			{
+				return perspectiveCamera.GetRayFromScreen(new Vector2(Mouse.current.X, Mouse.current.Y));
+			}
 		}
 
 		public MouseWatch()

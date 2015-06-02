@@ -66,17 +66,28 @@ namespace TKTools.Context
 		bool viewDirty = true;
 		Matrix4 projection, view;
 
-		public Ray GetRayFromPosition(Vector2 screenPos)
+		public Ray GetRayFromScreen(Vector2 screenPos)
 		{
-			if (screenPos.X < -1 * Ratio || screenPos.X > 1 * Ratio
+			if (screenPos.X < -1 || screenPos.X > 1
 				|| screenPos.Y < -1 || screenPos.Y > 1)
 				return new Ray(Vector3.Zero, Vector3.Zero);
 
-			float zPlane = 1f / (float)Math.Tan(TKMath.ToRadians(fieldOfView) / 2);
+			if (orthogonal)
+			{
+				Vector3 r;
 
-			Vector3 r = new Vector3(screenPos.X * Ratio, screenPos.Y, -zPlane);
+				r = new Vector3(0, 0, -1);
+				return new Ray(Position + new Vector3(screenPos.X * 4 * ratio, screenPos.Y * 4, 0), r);
+			}
+			else
+			{
+				Vector3 r;
 
-			return new Ray(Position + r, r.Normalized());
+				float zPlane = 1f / (float)Math.Tan(TKMath.ToRadians(fieldOfView) / 2);
+				r = new Vector3(screenPos.X * Ratio, screenPos.Y, -zPlane);
+
+				return new Ray(Position + r, r.Normalized());
+			}
 		}
 
 		public void AddFilter(Filter.Filter filter)
