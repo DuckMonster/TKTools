@@ -34,12 +34,19 @@ uniform bool usingTexture;
 uniform vec4 color;
 uniform bool fillColor;
 
+uniform vec2 tileSize;
+uniform vec2 tilePosition;
+uniform bool tiledTexture;
+
 in vec2 uv;
 out vec4 fragment;
 
 
 void main() {
 	vec4 finalColor;
+
+	if (tiledTexture)
+		uv = tileSize * tilePosition + tileSize * uv;
 
 	if (usingTexture) {
 		finalColor = texture2D(texture, uv) * color;
@@ -114,7 +121,22 @@ void main() {
 		public Texture Texture
 		{
 			get { return texture; }
-			set { texture = value; }
+			set
+			{
+				texture = value;
+				tileset = null;
+			}
+		}
+
+		Tileset tileset = null;
+		internal Tileset Tileset
+		{
+			get { return tileset; }
+			set
+			{
+				tileset = value;
+				texture = tileset.Texture;
+			}
 		}
 
 		bool fillColor = false;
@@ -263,9 +285,16 @@ void main() {
 			{
 				Program["usingTexture"].SetValue(true);
 				texture.Bind();
+
+				if (tileset != null)
+				{
+					Program["tiledTexture"].SetValue(true);
+					Program["tileSize"].SetValue(tileset.Size);
+					Program["tilePosition"].SetValue(tileset.Position);
+				}
+				else Program["tiledTexture"].SetValue(false);
 			}
-			else
-				Program["usingTexture"].SetValue(false);
+			else Program["usingTexture"].SetValue(false);
 
 			Program["color"].SetValue(Color);
 			Program["fillColor"].SetValue(FillColor);

@@ -209,7 +209,7 @@ namespace TKTools
 
 				if (uni != -1) return new Argument(uni, this);
 				else if (attr != -1) return new Argument(attr, this);
-				else return new Argument(-1, this);
+				else throw new NullReferenceException("Uniform/Attribute \"" + name + "\" does not exist in this program!");
 			}
 		}
 

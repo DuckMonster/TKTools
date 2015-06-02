@@ -60,6 +60,8 @@
     <Compile Include="Context\Input\Input.cs" />
     <Compile Include="Context\Mesh.cs" />
     <Compile Include="Context\Ray.cs" />
+    <Compile Include="Context\Sprite.cs" />
+    <Compile Include="Context\Tileset.cs" />
     <Compile Include="FrameBuffer.cs" />
     <Compile Include="Polygon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
