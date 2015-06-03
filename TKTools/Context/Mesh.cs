@@ -5,6 +5,12 @@ using System.Collections.Generic;
 
 namespace TKTools.Context
 {
+	public enum MeshPrimitive
+	{
+		Triangle,
+		Quad
+	}
+
 	public class Mesh
 	{
 		const string vertexSource =
@@ -41,15 +47,16 @@ uniform bool tiledTexture;
 in vec2 uv;
 out vec4 fragment;
 
-
 void main() {
 	vec4 finalColor;
 
+	vec2 finalUV = uv;
+
 	if (tiledTexture)
-		uv = tileSize * tilePosition + tileSize * uv;
+		finalUV = tileSize * tilePosition + tileSize * finalUV;
 
 	if (usingTexture) {
-		finalColor = texture2D(texture, uv) * color;
+		finalColor = texture2D(texture, finalUV) * color;
 	}
 	else {
 		finalColor = color;
@@ -75,22 +82,54 @@ void main() {
 			StandardShader.SetAttribute("vertexUV", VERTEX_UV_ID);
 		}
 
+		public static Mesh CreateFromPrimitive(MeshPrimitive p)
+		{
+			Mesh m = null;
+
+			switch (p)
+			{
+				#region Triangle
+				case MeshPrimitive.Triangle:
+					m = new Mesh(
+					new Vector3[] {
+						new Vector3(-0.5f, -0.5f, 0f),
+						new Vector3(0f, 0.5f, 0f),
+						new Vector3(0.5f, -0.5f, 0f)
+					},
+
+					new Vector2[] {
+						new Vector2(0f, 0f),
+						new Vector2(0.5f, 1f),
+						new Vector2(1f, 0f)
+					});
+					break;
+				#endregion triangle
+				#region Quad
+				case MeshPrimitive.Quad:
+					m = new Mesh(
+						new Vector3[] {
+							new Vector3(-0.5f, -0.5f, 0f),
+							new Vector3(-0.5f, 0.5f, 0f),
+							new Vector3(0.5f, 0.5f, 0f),
+							new Vector3(0.5f, -0.5f, 0f)
+						},
+
+						new Vector2[] {
+							new Vector2(0f, 0f),
+							new Vector2(0f, 1f),
+							new Vector2(1f, 1f),
+							new Vector2(1f, 0f)
+						});
+					break;
+				#endregion
+			}
+
+			return m;
+		}
+
 		public static Mesh CreateFromTexture(Texture t)
 		{
-			Mesh m = new Mesh(
-				new Vector3[] {
-					new Vector3(-0.5f, -0.5f, 0f),
-					new Vector3(-0.5f, 0.5f, 0f),
-					new Vector3(0.5f, 0.5f, 0f),
-					new Vector3(0.5f, -0.5f, 0f)
-				},
-
-				new Vector2[] {
-					new Vector2(0f, 0f),
-					new Vector2(0f, 1f),
-					new Vector2(1f, 1f),
-					new Vector2(1f, 0f)
-				});
+			Mesh m = CreateFromPrimitive(MeshPrimitive.Quad);
 
 			m.Texture = t;
 			return m;

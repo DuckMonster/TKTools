@@ -13,6 +13,11 @@ namespace TKTools.Context
 		float rotation = 0f;
 		float scale = 1f;
 
+		public Sprite()
+		{
+			mesh = Mesh.CreateFromPrimitive(MeshPrimitive.Quad);
+		}
+
 		public Sprite(Texture t)
 		{
 			mesh = Mesh.CreateFromTexture(t);
@@ -22,6 +27,12 @@ namespace TKTools.Context
 		{
 			mesh = Mesh.CreateFromTexture(t.Texture);
 			mesh.Tileset = t;
+		}
+
+		public Color Color
+		{
+			get { return mesh.Color; }
+			set { mesh.Color = value; }
 		}
 
 		public Texture Texture
@@ -79,6 +90,14 @@ namespace TKTools.Context
 				);
 		}
 
+		public void SetTransform(Vector2 position, float scale, float rotation) { SetTransform(new Vector3(position), scale, rotation); }
+		public void SetTransform(Vector3 position, float scale, float rotation)
+		{
+			Position = position;
+			Scale = scale;
+			Rotation = rotation;
+		}
+
 		public void Draw()
 		{
 			if (dirtyMatrix) UpdateMatrix();
@@ -87,9 +106,7 @@ namespace TKTools.Context
 
 		public void Draw(Vector3 position, float scale, float rotation)
 		{
-			Position = position;
-			Scale = scale;
-			Rotation = rotation;
+			SetTransform(position, scale, rotation);
 
 			Draw();
 		}
