@@ -2,6 +2,8 @@
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using TKTools.Mathematics;
 
 namespace TKTools.Context
 {
@@ -11,7 +13,7 @@ namespace TKTools.Context
 		Quad
 	}
 
-	public class Mesh
+	public class Mesh : IDisposable
 	{
 		const string vertexSource =
 			@"
@@ -163,12 +165,13 @@ void main() {
 			set
 			{
 				texture = value;
+
 				tileset = null;
 			}
 		}
 
 		Tileset tileset = null;
-		internal Tileset Tileset
+		public Tileset Tileset
 		{
 			get { return tileset; }
 			set
@@ -185,11 +188,27 @@ void main() {
 			set { fillColor = value; }
 		}
 
+		PrimitiveType primitiveType = PrimitiveType.Polygon;
+		public PrimitiveType PrimitiveType
+		{
+			get { return primitiveType; }
+			set { primitiveType = value; }
+		}
+
 		Matrix4 modelMatrix = Matrix4.Identity;
 		public Matrix4 ModelMatrix
 		{
 			get { return modelMatrix; }
 			set { modelMatrix = value; }
+		}
+
+		static Vector3 Vec2ToVec3(Vector2 v) { return new Vector3(v); }
+		static Vector2 Vec3ToVec2(Vector3 v) { return v.Xy; }
+
+        public Vector2[] Vertices2
+		{
+			get { return Array.ConvertAll(Vertices, new Converter<Vector3, Vector2>(Vec3ToVec2)); }
+			set { Vertices = Array.ConvertAll(value, new Converter<Vector2, Vector3>(Vec2ToVec3)); }
 		}
 
 		public Vector3[] Vertices
@@ -199,6 +218,8 @@ void main() {
 			{
 				vertices.Clear();
 				vertices.AddRange(value);
+
+				UploadVertices();
 			}
 		}
 
@@ -209,6 +230,8 @@ void main() {
 			{
 				uv.Clear();
 				uv.AddRange(value);
+
+				UploadVertices();
 			}
 		}
 
@@ -220,6 +243,14 @@ void main() {
 		public Mesh()
 		{
 			GenerateBuffers();
+		}
+		public Mesh(IEnumerable<Vector2> points)
+		{
+			AddVertices(points);
+		}
+		public Mesh(IEnumerable<Vector2> points, IEnumerable<Vector2> uvs)
+		{
+			AddVertices(points, uvs);
 		}
 		public Mesh(IEnumerable<Vector3> points)
 			:this()
@@ -248,6 +279,16 @@ void main() {
 			vertexUV.BindToVAO(vao);
 		}
 
+		void AddVertices(IEnumerable<Vector2> vert)
+		{
+			Vector3[] v = Array.ConvertAll(vert.ToArray(), Vec2ToVec3);
+			AddVertices(v);
+		}
+		void AddVertices(IEnumerable<Vector2> vert, IEnumerable<Vector2> uv)
+		{
+			Vector3[] v = Array.ConvertAll(vert.ToArray(), Vec2ToVec3);
+			AddVertices(v, uv);
+		}
 		void AddVertices(IEnumerable<Vector3> vert)
 		{
 			vertices.AddRange(vert);
@@ -301,15 +342,15 @@ void main() {
 
 		public void RotateX(float d)
 		{
-			modelMatrix = Matrix4.CreateRotationX(d) * modelMatrix;
+			modelMatrix = Matrix4.CreateRotationX(TKMath.ToRadians(d)) * modelMatrix;
 		}
 		public void RotateY(float d)
 		{
-			modelMatrix = Matrix4.CreateRotationY(d) * modelMatrix;
+			modelMatrix = Matrix4.CreateRotationY(TKMath.ToRadians(d)) * modelMatrix;
 		}
 		public void RotateZ(float d)
 		{
-			modelMatrix = Matrix4.CreateRotationZ(d) * modelMatrix;
+			modelMatrix = Matrix4.CreateRotationZ(TKMath.ToRadians(d)) * modelMatrix;
 		}
 
 		public void Draw()
@@ -328,7 +369,7 @@ void main() {
 				if (tileset != null)
 				{
 					Program["tiledTexture"].SetValue(true);
-					Program["tileSize"].SetValue(tileset.Size);
+					Program["tileSize"].SetValue(tileset.UVSize);
 					Program["tilePosition"].SetValue(tileset.Position);
 				}
 				else Program["tiledTexture"].SetValue(false);
@@ -338,7 +379,7 @@ void main() {
 			Program["color"].SetValue(Color);
 			Program["fillColor"].SetValue(FillColor);
 
-			GL.DrawArrays(PrimitiveType.Quads, 0, 4);
+			GL.DrawArrays(PrimitiveType, 0, vertices.Count);
 		}
 	}
 }

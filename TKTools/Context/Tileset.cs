@@ -5,14 +5,27 @@ namespace TKTools.Context
 	public class Tileset
 	{
 		Texture texture;
+
 		float tileWidth, tileHeight;
+		float textureWidth, textureHeight;
+
 		int tileX = 0, tileY = 0;
 
+		public Tileset(Tileset t)
+			:this(t.Texture, t.tileWidth, t.tileHeight)
+		{
+			X = t.X;
+			Y = t.Y;
+		}
 		public Tileset(Texture t, float tileWidth, float tileHeight)
 		{
 			texture = t;
-			this.tileWidth = tileWidth / t.Width;
-			this.tileHeight = tileHeight / t.Height;
+
+			this.textureWidth = t.Width;
+			this.textureHeight = t.Height;
+
+			this.tileWidth = tileWidth;
+			this.tileHeight = tileHeight;
 		}
 
 		public Texture Texture
@@ -30,6 +43,19 @@ namespace TKTools.Context
 		{
 			get { return tileHeight; }
 			set { tileHeight = value; }
+		}
+
+		internal float UVWidth
+		{
+			get { return Width / textureWidth; }
+		}
+		internal float UVHeight
+		{
+			get { return Height / textureHeight; }
+		}
+		internal Vector2 UVSize
+		{
+			get { return new Vector2(UVWidth, UVHeight); }
 		}
 
 		public int X
@@ -62,6 +88,11 @@ namespace TKTools.Context
 				Width = value.X;
 				Height = value.Y;
 			}
+		}
+
+		public Tileset Copy()
+		{
+			return new Tileset(this);
 		}
 	}
 }

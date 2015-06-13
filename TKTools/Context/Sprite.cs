@@ -1,9 +1,10 @@
-﻿using OpenTK;
+using OpenTK;
 using System;
+using TKTools.Mathematics;
 
 namespace TKTools.Context
 {
-	public class Sprite
+	public class Sprite : IDisposable
 	{
 		Mesh mesh;
 
@@ -11,7 +12,7 @@ namespace TKTools.Context
 
 		Vector3 position = Vector3.Zero;
 		float rotation = 0f;
-		float scale = 1f;
+		Vector2 scale = Vector2.One;
 
 		public Sprite()
 		{
@@ -27,6 +28,29 @@ namespace TKTools.Context
 		{
 			mesh = Mesh.CreateFromTexture(t.Texture);
 			mesh.Tileset = t;
+		}
+
+		public void Dispose()
+		{
+			mesh.Dispose();
+		}
+
+		public Mesh Mesh
+		{
+			get { return mesh; }
+			set
+			{
+				if (value != mesh)
+					mesh.Dispose();
+
+				mesh = value;
+			}
+		}
+
+		public bool FillColor
+		{
+			get { return mesh.FillColor; }
+			set { mesh.FillColor = value; }
 		}
 
 		public Color Color
@@ -57,7 +81,14 @@ namespace TKTools.Context
 			}
 		}
 
-		public float Scale
+		public float ScaleF
+		{
+			set
+			{
+				Scale = new Vector2(value);
+			}
+		}
+		public Vector2 Scale
 		{
 			get { return scale; }
 			set
@@ -72,19 +103,24 @@ namespace TKTools.Context
 			get { return rotation; }
 			set
 			{
-				rotation = value;
+				rotation = TKMath.ToRadians(value);
 				dirtyMatrix = true;
 			}
 		}
 
 		void UpdateMatrix()
 		{
-			float cos = (float)Math.Cos(rotation);
-			float sin = (float)Math.Sin(rotation);
+			float sin = 0f, cos = 1f;
+
+			if (rotation != 0f)
+			{
+				cos = (float)Math.Cos(rotation);
+				sin = (float)Math.Sin(rotation);
+			}
 
 			mesh.ModelMatrix = new Matrix4(
-				scale * cos, scale * sin, 0, 0,
-				scale * -sin, scale * cos, 0, 0,
+				scale.X * cos, scale.X * sin, 0, 0,
+				scale.Y * -sin, scale.Y * cos, 0, 0,
 				0, 0, 1, 0,
 				position.X, position.Y, position.Z, 1
 				);
@@ -92,6 +128,13 @@ namespace TKTools.Context
 
 		public void SetTransform(Vector2 position, float scale, float rotation) { SetTransform(new Vector3(position), scale, rotation); }
 		public void SetTransform(Vector3 position, float scale, float rotation)
+		{
+			Position = position;
+			ScaleF = scale;
+			Rotation = rotation;
+		}
+		public void SetTransform(Vector2 position, Vector2 scale, float rotation) { SetTransform(new Vector3(position), scale, rotation); }
+		public void SetTransform(Vector3 position, Vector2 scale, float rotation)
 		{
 			Position = position;
 			Scale = scale;
@@ -104,7 +147,15 @@ namespace TKTools.Context
 			mesh.Draw();
 		}
 
+		public void Draw(Vector2 position, float scale, float rotation) { Draw(new Vector3(position), scale, rotation); }
 		public void Draw(Vector3 position, float scale, float rotation)
+		{
+			SetTransform(position, scale, rotation);
+
+			Draw();
+		}
+		public void Draw(Vector2 position, Vector2 scale, float rotation) { Draw(new Vector3(position), scale, rotation); }
+		public void Draw(Vector3 position, Vector2 scale, float rotation)
 		{
 			SetTransform(position, scale, rotation);
 

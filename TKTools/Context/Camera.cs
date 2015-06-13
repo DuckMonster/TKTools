@@ -77,7 +77,7 @@ namespace TKTools.Context
 				Vector3 r;
 
 				r = new Vector3(0, 0, -1);
-				return new Ray(Position + new Vector3(screenPos.X * 4 * ratio, screenPos.Y * 4, 0), r);
+				return new Ray(Position + new Vector3(screenPos.X * 5 * ratio, screenPos.Y * 5, 0), r);
 			}
 			else
 			{
@@ -112,11 +112,15 @@ namespace TKTools.Context
 		{
 			if (activeCamera == this) return;
 
+			Camera a = activeCamera;
+
 			UpdateProjection();
 
 			activeCamera = this;
 			ClearBuffer();
 			BindBuffer();
+
+			if (a != null) a.Draw(frameBuffer);
 		}
 
 		internal void ClearBuffer()
@@ -140,10 +144,10 @@ namespace TKTools.Context
 			ratio = Context.activeContext.AspectRatio;
 
 			if (Orthogonal)
-				projection = Matrix4.CreateOrthographicOffCenter(-4f * ratio, 4f * ratio, -4f, 4f, 1f, 10f);
+				projection = Matrix4.CreateOrthographicOffCenter(-5f * ratio, 5f * ratio, -5f, 5f, 1f, 100f);
 			else
 			{
-				float v = (float)Math.Tan(TKMath.ToRadians(45f) / 2);
+				/*float v = (float)Math.Tan(TKMath.ToRadians(45f) / 2);
 				float n = 1f;
 				float f = 50f;
 
@@ -154,9 +158,9 @@ namespace TKTools.Context
 					0f, 0f, -1f, 0f
 					);
 
-				projection.Transpose();
+				projection.Transpose();*/
 
-				//projection = Matrix4.CreatePerspectiveFieldOfView(TKMath.ToRadians(45f), ratio, 1f, 50f);
+				projection = Matrix4.CreatePerspectiveFieldOfView(TKMath.ToRadians(45f), ratio, 1f, 100f);
 			}
 		}
 
@@ -173,7 +177,7 @@ namespace TKTools.Context
 			get { return projection; }
 		}
 
-		internal void Draw()
+		internal void Draw(FrameBuffer fb = null)
 		{
 			Texture finalTexture = frameBuffer.Texture;
 
@@ -183,7 +187,11 @@ namespace TKTools.Context
 				finalTexture = f.OutputTexture;
 			}
 
-			FrameBuffer.ReleaseActive();
+			if (fb == null)
+				FrameBuffer.ReleaseActive();
+			else
+				fb.Bind();
+
 			finalTexture.DrawToScreen();
 		}
 	}

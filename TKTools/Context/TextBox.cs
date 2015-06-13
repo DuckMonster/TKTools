@@ -3,9 +3,9 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 
-namespace TKTools
+namespace TKTools.Context
 {
-	public class TextBox
+	public class TextBox : IDisposable
 	{
 		public enum HorizontalAlignment
 		{
@@ -37,6 +37,8 @@ namespace TKTools
 		float? setHeight = null;
 
 		Stopwatch updateWatch;
+
+		Mesh mesh;
 
 		VerticalAlignment verticalAlign;
 		HorizontalAlignment horizontalAlign;
@@ -154,7 +156,7 @@ namespace TKTools
 			}
 		}
 
-		public Vector2[] Vertices
+		public Vector3[] Vertices
 		{
 			get
 			{
@@ -166,11 +168,11 @@ namespace TKTools
 				if (setHeight != null)
 					scale = setHeight.Value / height;
 
-				return new Vector2[] {
-					(new Vector2(0, 0) + alignVector) * scale,
-					(new Vector2(width, 0) + alignVector) * scale,
-					(new Vector2(width, height) + alignVector) * scale,
-					(new Vector2(0, height) + alignVector) * scale
+				return new Vector3[] {
+					(new Vector3(0, 0, 0) + new Vector3(alignVector)) * scale,
+					(new Vector3(width, 0, 0) + new Vector3(alignVector)) * scale,
+					(new Vector3(width, height, 0) + new Vector3(alignVector)) * scale,
+					(new Vector3(0, height, 0) + new Vector3(alignVector)) * scale
 				};
 			}
 		}
@@ -188,6 +190,22 @@ namespace TKTools
 					new Vector2(0, 0)
 				};
 			}
+		}
+
+		public Mesh Mesh
+		{
+			get
+			{
+				mesh.Vertices = Vertices;
+				mesh.UV = UV;
+				return mesh;
+			}
+		}
+
+		public Color Color
+		{
+			get { return mesh.Color; }
+			set { mesh.Color = value; }
 		}
 
 		public long UpdateRate
@@ -211,6 +229,17 @@ namespace TKTools
 
 			font = f;
 			texture = new Texture();
+
+			mesh = new Mesh(Vertices, UV);
+			mesh.Texture = texture;
+		}
+
+		public void Dispose()
+		{
+			mesh.Dispose();
+			texture.Dispose();
+			bitmap.Dispose();
+			bitmapGraphics.Dispose();
 		}
 
 		void CreateBitmap(int width, int height)
@@ -263,8 +292,6 @@ namespace TKTools
 
 			bitmapGraphics.Clear(System.Drawing.Color.Transparent);
 			bitmapGraphics.DrawString(text, font, Brushes.White, 3 + formatVector.X, 3, format);
-
-			bitmap.Save("temp.png");
 		}
 
 		void UpdateTexture()

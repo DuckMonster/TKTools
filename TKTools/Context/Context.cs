@@ -3,9 +3,11 @@ using OpenTK;
 using System.Drawing;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using GX = OpenTK.Graphics;
 
 namespace TKTools.Context
 {
+	public delegate void BeginEventHandler();
 	public delegate void UpdateEventHandler();
 	public delegate void RenderEventHandler();
 
@@ -13,6 +15,7 @@ namespace TKTools.Context
 	{
 		internal static Context activeContext;
 
+		public event BeginEventHandler OnBegin;
 		public event UpdateEventHandler OnUpdate;
 		public event RenderEventHandler OnRender;
 
@@ -21,6 +24,13 @@ namespace TKTools.Context
 			get { return (float)Size.Width / Size.Height; }
 		}
 
+		public Context(int width, int height, GX.GraphicsMode gm)
+			:base(width, height, gm)
+		{
+			activeContext = this;
+			Mesh.CompileStandardShader();
+			Texture.InitVAO();
+		}
 		public Context()
 			:base()
 		{
@@ -42,6 +52,10 @@ namespace TKTools.Context
 		{
 			base.OnLoad(e);
 			GL.ClearColor(0f, 0f, 0f, 1f);
+			GL.Enable(EnableCap.Blend);
+			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+			OnBegin();
 		}
 
 		int mouseX, mouseY;
