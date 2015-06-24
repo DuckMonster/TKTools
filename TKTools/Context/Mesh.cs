@@ -80,8 +80,8 @@ void main() {
 		internal static void CompileStandardShader()
 		{
 			StandardShader = new ShaderProgram(vertexSource, fragmentSource);
-			StandardShader.SetAttribute("vertexPosition", VERTEX_POSITION_ID);
-			StandardShader.SetAttribute("vertexUV", VERTEX_UV_ID);
+			//StandardShader.SetAttribute("vertexPosition", VERTEX_POSITION_ID);
+			//StandardShader.SetAttribute("vertexUV", VERTEX_UV_ID);
 		}
 
 		public static Mesh CreateFromPrimitive(MeshPrimitive p)
@@ -240,15 +240,29 @@ void main() {
 			get { return Mesh.StandardShader; }
 		}
 
+		public Polygon Polygon
+		{
+			get
+			{
+				Vector3[] p = new Vector3[vertices.Count];
+				for (int i = 0; i < p.Length; i++)
+					p[i] = Vector3.Transform(vertices[i], ModelMatrix);
+
+				return new Polygon(p);
+			}
+		}
+
 		public Mesh()
 		{
 			GenerateBuffers();
 		}
 		public Mesh(IEnumerable<Vector2> points)
+			:this()
 		{
 			AddVertices(points);
 		}
 		public Mesh(IEnumerable<Vector2> points, IEnumerable<Vector2> uvs)
+			:this()
 		{
 			AddVertices(points, uvs);
 		}
@@ -308,13 +322,13 @@ void main() {
 			{
 				vertexPosition.UploadData(vertices.ToArray());
 				vertexUV.UploadData(uv.ToArray());
-				vertexPosition.BindToAttribute(Mesh.VERTEX_POSITION_ID);
-				vertexUV.BindToAttribute(Mesh.VERTEX_UV_ID);
+				vertexPosition.BindToAttribute(Program, "vertexPosition");
+				vertexUV.BindToAttribute(Program, "vertexUV");
 			} else
 			{
 				vertexPosition.UploadData(vertices.ToArray());
-				vertexPosition.BindToAttribute(Mesh.VERTEX_POSITION_ID);
-				vertexPosition.BindToAttribute(Mesh.VERTEX_UV_ID);
+				vertexPosition.BindToAttribute(Program, "vertexPosition");
+				vertexPosition.BindToAttribute(Program, "vertexUV");
 			}
 		}
 
@@ -353,7 +367,8 @@ void main() {
 			modelMatrix = Matrix4.CreateRotationZ(TKMath.ToRadians(d)) * modelMatrix;
 		}
 
-		public void Draw()
+		public void Draw() { Draw(PrimitiveType); }
+        public void Draw(PrimitiveType pt)
 		{
 			vao.Bind();
 
@@ -379,7 +394,7 @@ void main() {
 			Program["color"].SetValue(Color);
 			Program["fillColor"].SetValue(FillColor);
 
-			GL.DrawArrays(PrimitiveType, 0, vertices.Count);
+			GL.DrawArrays(pt, 0, vertices.Count);
 		}
 	}
 }

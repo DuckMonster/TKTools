@@ -84,5 +84,11 @@ namespace TKTools
 			GL.EnableVertexAttribArray(attribIndex);
 			GL.VertexAttribPointer(attribIndex, Dimensions, VertexAttribPointerType.Float, false, 0, 0);
 		}
+
+		public void BindToAttribute(ShaderProgram program, string attrName)
+		{
+			//Bind();
+			program[attrName].SetValue(this);
+		}
 	}
 }

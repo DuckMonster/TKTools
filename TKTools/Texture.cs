@@ -42,8 +42,6 @@ void main() {
 		internal static void InitVAO()
 		{
 			screenProgram = new ShaderProgram(screenVertexSource, screenFragmentSource);
-			screenProgram.SetAttribute("vertexPosition", Mesh.VERTEX_POSITION_ID);
-			screenProgram.SetAttribute("vertexUV", Mesh.VERTEX_UV_ID);
 
 			screenVAO = new VAO();
 
@@ -64,9 +62,9 @@ void main() {
 			});
 
 			vboVertexPosition.BindToVAO(screenVAO);
-			vboVertexPosition.BindToAttribute(Mesh.VERTEX_POSITION_ID);
+			vboVertexPosition.BindToAttribute(screenProgram, "vertexPosition");
 			vboVertexUV.BindToVAO(screenVAO);
-			vboVertexUV.BindToAttribute(Mesh.VERTEX_UV_ID);
+			vboVertexUV.BindToAttribute(screenProgram, "vertexUV");
 		}
 
 		internal static void DrawTextureToScreen(Texture t) { DrawTextureToScreen(new Texture[] { t }, screenProgram); }

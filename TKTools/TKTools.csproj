@@ -47,8 +47,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AStar\AStar.cs" />
-    <Compile Include="AStar\Node.cs" />
     <Compile Include="Color.cs" />
     <Compile Include="Context\Camera.cs" />
     <Compile Include="Context\Context.cs" />

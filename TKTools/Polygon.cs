@@ -11,10 +11,10 @@ namespace TKTools
 	{
 		class PolyEnumerator : IEnumerator
 		{
-			Vector2[] pointList;
+			Vector3[] pointList;
 			int position = -1;
 
-			public PolyEnumerator(Vector2[] list)
+			public PolyEnumerator(Vector3[] list)
 			{
 				pointList = list;
 			}
@@ -39,14 +39,14 @@ namespace TKTools
 			}
 		}
 
-		public List<Vector2> pointList = new List<Vector2>(50);
+		public List<Vector3> pointList = new List<Vector3>(50);
 
 		public RectangleF Bounds
 		{
 			get
 			{
-				PolygonProjection vert = new PolygonProjection(this, new Vector2(0, 1)),
-						hori = new PolygonProjection(this, new Vector2(1, 0));
+				PolygonProjection vert = new PolygonProjection(this, new Vector3(0, 1, 0)),
+						hori = new PolygonProjection(this, new Vector3(1, 0, 0));
 
 				return new RectangleF(hori.Min, vert.Min, hori.Length, vert.Length);
 			}
@@ -69,31 +69,31 @@ namespace TKTools
 		public Polygon()
 		{
 		}
-		public Polygon(IEnumerable<Vector2> points)
+		public Polygon(IEnumerable<Vector3> points)
 		{
 			pointList.AddRange(points);
 		}
 
 		public void AddPoint(Polygon p)
 		{
-			foreach (Vector2 point in p.pointList)
+			foreach (Vector3 point in p.pointList)
 				AddPoint(point);
 		}
-		public void AddPoint(Vector2 point)
+		public void AddPoint(Vector3 point)
 		{
 			pointList.Add(point);
 		}
-		public void AddPoint(IEnumerable<Vector2> points)
+		public void AddPoint(IEnumerable<Vector3> points)
 		{
 			pointList.AddRange(points);
 		}
 
 		public Vector2 GetEdgeNormal(int n)
 		{
-			return (pointList[n % pointList.Count] - pointList[(n + 1) % pointList.Count]).PerpendicularRight;
+			return (pointList[n % pointList.Count] - pointList[(n + 1) % pointList.Count]).Xy.PerpendicularRight;
 		}
 
-		public bool Intersects(Vector2 point) { return Intersects(new Polygon(new Vector2[] { point })); }
+		public bool Intersects(Vector3 point) { return Intersects(new Polygon(new Vector3[] { point })); }
 		public bool Intersects(Polygon p)
 		{
 			if (pointList.Count > 1)
@@ -103,8 +103,8 @@ namespace TKTools
 					Vector2 normal = GetEdgeNormal(i);
 
 					PolygonProjection
-						a = new PolygonProjection(this, normal),
-						b = new PolygonProjection(p, normal);
+						a = new PolygonProjection(this, new Vector3(normal)),
+						b = new PolygonProjection(p, new Vector3(normal));
 
 					if (!(a & b)) return false;
 				}
@@ -117,8 +117,8 @@ namespace TKTools
 					Vector2 normal = p.GetEdgeNormal(i);
 
 					PolygonProjection
-						a = new PolygonProjection(this, normal),
-						b = new PolygonProjection(p, normal);
+						a = new PolygonProjection(this, new Vector3(normal)),
+						b = new PolygonProjection(p, new Vector3(normal));
 
 					if (!(a & b)) return false;
 				}
@@ -127,19 +127,7 @@ namespace TKTools
 			return true;
 		}
 
-		public void Scale(float scale)
-		{
-			Vector2 center = Center;
-
-			for (int i = 0; i < pointList.Count; i++)
-			{
-				Vector2 pos = pointList[i] - center;
-				pos = pos.Normalized() * pos.Length * scale;
-				pointList[i] = pos + center;
-			}
-		}
-
-		public Vector2 this[int i]
+		public Vector3 this[int i]
 		{
 			get
 			{
@@ -168,7 +156,7 @@ namespace TKTools
 			return newPoly;
 		}
 
-		public static Polygon operator +(Polygon p, IEnumerable<Vector2> points)
+		public static Polygon operator +(Polygon p, IEnumerable<Vector3> points)
 		{
 			Polygon newPoly = new Polygon(p.pointList.ToArray());
 			newPoly.AddPoint(points);
@@ -176,7 +164,7 @@ namespace TKTools
 			return newPoly;
 		}
 
-		public static Polygon operator +(Polygon p, Vector2 point)
+		public static Polygon operator +(Polygon p, Vector3 point)
 		{
 			Polygon newPoly = new Polygon(p.pointList.ToArray());
 			newPoly.AddPoint(point);
@@ -184,15 +172,7 @@ namespace TKTools
 			return newPoly;
 		}
 
-		public static Polygon operator *(Polygon p, float scale)
-		{
-			Polygon newPoly = new Polygon(p.pointList.ToArray());
-			newPoly.Scale(scale);
-
-			return newPoly;
-		}
-
-		public static implicit operator Vector2[](Polygon p)
+		public static implicit operator Vector3[](Polygon p)
 		{
 			return p.pointList.ToArray();
 		}
@@ -226,13 +206,13 @@ namespace TKTools
 			}
 		}
 
-		public PolygonProjection(Polygon p, Vector2 axis)
+		public PolygonProjection(Polygon p, Vector3 axis)
 		{
 			axis.Normalize();
 
-			foreach (Vector2 point in p.pointList)
+			foreach (Vector3 point in p.pointList)
 			{
-				hitPointList.Add(Vector2.Dot(point, axis));
+				hitPointList.Add(Vector3.Dot(point, axis));
 			}
 		}
 

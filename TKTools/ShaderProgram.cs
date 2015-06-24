@@ -24,6 +24,7 @@ namespace TKTools
 			{
 				GL.UseProgram(program.programID);
 				vbo.Bind();
+				GL.EnableVertexAttribArray(ID);
 				GL.VertexAttribPointer(ID, vbo.Dimensions, VertexAttribPointerType.Float, false, 0, 0);
 			}
 
