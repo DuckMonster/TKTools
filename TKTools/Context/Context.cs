@@ -61,6 +61,7 @@ namespace TKTools.Context
 		int mouseX, mouseY;
 		protected override void OnMouseMove(MouseMoveEventArgs e)
 		{
+			if (e.X < 0 || e.Y < 0 || e.X > ClientSize.Width || e.Y > ClientSize.Height) return;
 			mouseX = e.X;
 			mouseY = e.Y;
 		}

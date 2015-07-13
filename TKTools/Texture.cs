@@ -149,17 +149,22 @@ void main() {
 			buff.Release();
 		}
 
-		public void UploadBitmap(Bitmap bmp)
+		public void UploadBitmap(Bitmap b)
 		{
-			BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			Bitmap temp = new Bitmap(b);
+			temp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
+			BitmapData data = temp.LockBits(new Rectangle(0, 0, temp.Width, temp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
 			Bind();
 			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
 
-			width = bmp.Width;
-			height = bmp.Height;
+			width = temp.Width;
+			height = temp.Height;
 
-			bmp.UnlockBits(data);
+			temp.UnlockBits(data);
+
+			temp.Dispose();
 		}
 
 		public void UpdateBitmap(Bitmap bmp)

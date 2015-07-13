@@ -56,6 +56,14 @@ namespace TKTools.Context.Input
 		{
 			get { return Position.Y; }
 		}
+		public float Wheel
+		{
+			get { return Mouse.current.Wheel; }
+		}
+		public float WheelDelta
+		{
+			get { return Wheel - Mouse.previous.Wheel; }
+		}
 		public Vector3 Position
 		{
 			get
@@ -142,6 +150,11 @@ namespace TKTools.Context.Input
 			internal float Y
 			{
 				get { return y; }
+			}
+
+			internal float Wheel
+			{
+				get { return state.WheelPrecise; }
 			}
 
 			public TKMouseState(float x, float y, MouseState state)

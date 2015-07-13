@@ -141,6 +141,17 @@ namespace TKTools
 			}
 		}
 
+		public override string ToString()
+		{
+			string s = "[";
+			foreach (Vector3 p in this)
+				s += p + ", ";
+
+			s = s.Remove(s.Length - 2) + "]";
+
+			return s;
+		}
+
 		//Enumerator stuff
 		public IEnumerator GetEnumerator()
 		{
