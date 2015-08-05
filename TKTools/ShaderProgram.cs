@@ -9,23 +9,15 @@ namespace TKTools
 {
 	public class ShaderProgram : IDisposable
 	{
-		public struct Argument
+		public struct Uniform
 		{
 			ShaderProgram program;
 			int ID;
 
-			public Argument(int ID, ShaderProgram prog)
+			public Uniform(int ID, ShaderProgram prog)
 			{
 				program = prog;
 				this.ID = ID;
-			}
-
-			public void SetValue<T>(VBO<T> vbo) where T : struct
-			{
-				GL.UseProgram(program.programID);
-				vbo.Bind();
-				GL.EnableVertexAttribArray(ID);
-				GL.VertexAttribPointer(ID, vbo.Dimensions, VertexAttribPointerType.Float, false, 0, 0);
 			}
 
 			public void SetValue(bool val)
@@ -179,12 +171,6 @@ namespace TKTools
 			return uni;
 		}
 
-		public void BindVBO(int vbo, string attr)
-		{
-			int att = GetAttribute(attr);
-			GL.VertexAttribPointer(att, 3, VertexAttribPointerType.Float, false, 0, 0);
-		}
-
 		public void Use()
 		{
 			GL.UseProgram(programID);
@@ -202,15 +188,14 @@ namespace TKTools
 			}
 		}
 
-		public Argument this[string name]
+		public Uniform this[string name]
 		{
 			get
 			{
-				int uni = GetUniform(name), attr = GetAttribute(name);
+				int uni = GetUniform(name);
 
-				if (uni != -1) return new Argument(uni, this);
-				else if (attr != -1) return new Argument(attr, this);
-				else throw new NullReferenceException("Uniform/Attribute \"" + name + "\" does not exist in this program!");
+				if (uni != -1) return new Uniform(uni, this);
+				else throw new NullReferenceException("Uniform \"" + name + "\" does not exist in this program!");
 			}
 		}
 

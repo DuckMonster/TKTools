@@ -1,400 +1,287 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using TKTools.Mathematics;
 
 namespace TKTools.Context
 {
-	public enum MeshPrimitive
+	public class Vertex
 	{
-		Triangle,
-		Quad
+		Mesh mesh;
+		Dictionary<string, object> attributes = new Dictionary<string, object>();
+
+		public Mesh Mesh { get { return mesh; } }
+
+		public Vector3 Position
+		{
+			get { return GetAttribute<Vector3>("position"); }
+			set { SetAttribute("position", value); }
+		}
+
+		public Vertex(Mesh mesh)
+		{
+			this.mesh = mesh;
+		}
+
+		public void SetAttribute<T>(string name, T value) where T : struct
+		{
+			if (attributes.ContainsKey(name))
+				attributes[name] = value;
+			else
+				attributes.Add(name, value);
+		}
+
+		public T GetAttribute<T>(string name) where T : struct
+		{
+			if (attributes.ContainsKey(name))
+				return (T)attributes[name];
+			else
+				return default(T);
+		}
 	}
 
-	public class Mesh : IDisposable
+	public class Mesh : IEnumerable, IDisposable
 	{
-		const string vertexSource =
-			@"
-#version 330
-
-in vec3 vertexPosition;
-in vec2 vertexUV;
-
-uniform mat4 projection;
-uniform mat4 view;
-uniform mat4 model;
-
-out vec2 uv;
-
-void main() {
-	uv = vertexUV;
-	gl_Position = projection * view * model * vec4(vertexPosition, 1.0);
-}";
-
-		const string fragmentSource =
-					@"
-#version 330
-
-uniform sampler2D texture;
-uniform bool usingTexture;
-uniform vec4 color;
-uniform bool fillColor;
-
-uniform vec2 tileSize;
-uniform vec2 tilePosition;
-uniform bool tiledTexture;
-
-in vec2 uv;
-out vec4 fragment;
-
-void main() {
-	vec4 finalColor;
-
-	vec2 finalUV = uv;
-
-	if (tiledTexture)
-		finalUV = tileSize * tilePosition + tileSize * finalUV;
-
-	if (usingTexture) {
-		finalColor = texture2D(texture, finalUV) * color;
-	}
-	else {
-		finalColor = color;
-	}
-
-	if (fillColor)
-	{
-		finalColor.rgb = color.rgb;
-	}
-
-	if (finalColor.a <= 0) discard;
-	else fragment = finalColor;
-}";
-
-		public const int VERTEX_POSITION_ID = 0;
-		public const int VERTEX_UV_ID = 1;
-
-		internal static ShaderProgram StandardShader;
-		internal static void CompileStandardShader()
+		#region Attribute & Uniform
+		public abstract class AttributeHelper : IDisposable
 		{
-			StandardShader = new ShaderProgram(vertexSource, fragmentSource);
-			//StandardShader.SetAttribute("vertexPosition", VERTEX_POSITION_ID);
-			//StandardShader.SetAttribute("vertexUV", VERTEX_UV_ID);
-		}
+			protected Mesh mesh;
+			protected BufferUsageHint bufferHint = BufferUsageHint.StaticDraw;
 
-		public static Mesh CreateFromPrimitive(MeshPrimitive p)
-		{
-			Mesh m = null;
-
-			switch (p)
+			string name;
+			public string Name
 			{
-				#region Triangle
-				case MeshPrimitive.Triangle:
-					m = new Mesh(
-					new Vector3[] {
-						new Vector3(-0.5f, -0.5f, 0f),
-						new Vector3(0f, 0.5f, 0f),
-						new Vector3(0.5f, -0.5f, 0f)
-					},
-
-					new Vector2[] {
-						new Vector2(0f, 0f),
-						new Vector2(0.5f, 1f),
-						new Vector2(1f, 0f)
-					});
-					break;
-				#endregion triangle
-				#region Quad
-				case MeshPrimitive.Quad:
-					m = new Mesh(
-						new Vector3[] {
-							new Vector3(-0.5f, -0.5f, 0f),
-							new Vector3(-0.5f, 0.5f, 0f),
-							new Vector3(0.5f, 0.5f, 0f),
-							new Vector3(0.5f, -0.5f, 0f)
-						},
-
-						new Vector2[] {
-							new Vector2(0f, 0f),
-							new Vector2(0f, 1f),
-							new Vector2(1f, 1f),
-							new Vector2(1f, 0f)
-						});
-					break;
-				#endregion
+				get { return name; }
 			}
 
-			return m;
-		}
-
-		public static Mesh CreateFromTexture(Texture t)
-		{
-			Mesh m = CreateFromPrimitive(MeshPrimitive.Quad);
-
-			m.Texture = t;
-			return m;
-		}
-
-		List<Vector3> vertices = new List<Vector3>();
-		List<Vector2> uv = new List<Vector2>();
-
-		VAO vao;
-		VBO<Vector3> vertexPosition;
-		VBO<Vector2> vertexUV;
-
-		Color color = Color.White;
-		public Color Color
-		{
-			get { return color; }
-			set { color = value; }
-		}
-
-		bool textureEnabled = true;
-		public bool TextureEnabled
-		{
-			get { return textureEnabled; }
-			set { textureEnabled = value; }
-		}
-
-		Texture texture = null;
-		public Texture Texture
-		{
-			get { return texture; }
-			set
+			public BufferUsageHint BufferHint
 			{
-				texture = value;
+				get { return bufferHint; }
+				set { bufferHint = value; }
+			}
 
-				tileset = null;
+			public AttributeHelper(string name, Mesh mesh)
+			{
+				this.name = name;
+				this.mesh = mesh;
+			}
+
+			public abstract void Dispose();
+			public abstract void UploadData();
+		}
+		public class AttributeHelper<T> : AttributeHelper where T : struct
+		{
+			VBO<T> vbo;
+
+			public T[] Data
+			{
+				set { SetValue(value); }
+				get { return GetValue(); }
+			}
+
+			public AttributeHelper(string name, Mesh mesh)
+				: base(name, mesh)
+			{
+				vbo = new VBO<T>();
+				mesh.vao.BindAttribute(Name, vbo);
+			}
+
+			public override void Dispose()
+			{
+				vbo.Dispose();
+			}
+
+			void SetValue(T[] value)
+			{
+				mesh.SetVertexCount(value.Length);
+				for (int i = 0; i < value.Length; i++)
+					mesh.Vertices[i].SetAttribute(Name, value[i]);
+
+				UploadData();
+			}
+
+			T[] GetValue()
+			{
+				T[] list = new T[mesh.Vertices.Count];
+				for (int i = 0; i < list.Length; i++)
+					list[i] = mesh.Vertices[i].GetAttribute<T>(Name);
+
+				return list;
+			}
+
+			public override void UploadData()
+			{
+				vbo.UploadData(GetValue(), BufferHint);
 			}
 		}
-
-		Tileset tileset = null;
-		public Tileset Tileset
+		public class UniformHelper
 		{
-			get { return tileset; }
-			set
+			protected Mesh mesh;
+
+			string name;
+			public string Name
 			{
-				tileset = value;
-				texture = tileset.Texture;
+				get { return name; }
+			}
+
+			object value;
+			public object Value
+			{
+				get { return value; }
+				set { this.value = value; }
+			}
+
+			public UniformHelper(Mesh mesh, string name)
+			{
+				this.mesh = mesh;
+				this.name = name;
+			}
+
+			public void UploadData()
+			{
+				Type t = value.GetType();
+				ShaderProgram.Uniform u = mesh.Program[name];
+
+				switch (t.Name)
+				{
+					case "Single": u.SetValue((float)value); break;
+					case "Vector2": u.SetValue((Vector2)value); break;
+					case "Vector3": u.SetValue((Vector3)value); break;
+					case "Vector4": u.SetValue((Vector4)value); break;
+					case "Integer": u.SetValue((int)value); break;
+					case "Boolean": u.SetValue((bool)value); break;
+					case "Color": u.SetValue((Color)value); break;
+					case "Matrix4": u.SetValue((Matrix4)value); break;
+					default: throw new NotSupportedException();
+				}
 			}
 		}
+		#endregion
 
-		bool fillColor = false;
-		public bool FillColor
+		#region Enum stuff
+		class MeshEnum : IEnumerator
 		{
-			get { return fillColor; }
-			set { fillColor = value; }
-		}
+			Mesh mesh;
+			int index = -1;
 
-		PrimitiveType primitiveType = PrimitiveType.Polygon;
-		public PrimitiveType PrimitiveType
-		{
-			get { return primitiveType; }
-			set { primitiveType = value; }
-		}
-
-		Matrix4 modelMatrix = Matrix4.Identity;
-		public Matrix4 ModelMatrix
-		{
-			get { return modelMatrix; }
-			set { modelMatrix = value; }
-		}
-
-		static Vector3 Vec2ToVec3(Vector2 v) { return new Vector3(v); }
-		static Vector2 Vec3ToVec2(Vector3 v) { return v.Xy; }
-
-        public Vector2[] Vertices2
-		{
-			get { return Array.ConvertAll(Vertices, new Converter<Vector3, Vector2>(Vec3ToVec2)); }
-			set { Vertices = Array.ConvertAll(value, new Converter<Vector2, Vector3>(Vec2ToVec3)); }
-		}
-
-		public Vector3[] Vertices
-		{
-			get { return vertices.ToArray(); }
-			set
+			public MeshEnum(Mesh m)
 			{
-				vertices.Clear();
-				vertices.AddRange(value);
+				this.mesh = m;
+			}
 
-				UploadVertices();
+			public void Reset() { index = -1; }
+			public bool MoveNext()
+			{
+				index++;
+				return mesh.vertices.Count < index;
+			}
+
+			public object Current
+			{
+				get { return mesh.vertices[index]; }
 			}
 		}
+		public IEnumerator GetEnumerator() { return new MeshEnum(this); }
+		#endregion
 
-		public Vector2[] UV
+		List<Vertex> vertices = new List<Vertex>();
+		Dictionary<string, AttributeHelper> attributes = new Dictionary<string, AttributeHelper>();
+		Dictionary<string, UniformHelper> uniforms = new Dictionary<string, UniformHelper>();
+
+		protected VAO vao;
+		protected ShaderProgram program;
+
+		public ShaderProgram Program
 		{
-			get { return uv.ToArray(); }
-			set
-			{
-				uv.Clear();
-				uv.AddRange(value);
-
-				UploadVertices();
-			}
-		}
-
-		ShaderProgram Program
-		{
-			get { return Mesh.StandardShader; }
+			get { return program; }
 		}
 
-		public Polygon Polygon
+		public List<Vertex> Vertices
 		{
-			get
-			{
-				Vector3[] p = new Vector3[vertices.Count];
-				for (int i = 0; i < p.Length; i++)
-					p[i] = Vector3.Transform(vertices[i], ModelMatrix);
-
-				return new Polygon(p);
-			}
+			get { return vertices; }
 		}
 
-		public Mesh()
+		public Mesh(ShaderProgram program)
 		{
-			GenerateBuffers();
-		}
-		public Mesh(IEnumerable<Vector2> points)
-			:this()
-		{
-			AddVertices(points);
-		}
-		public Mesh(IEnumerable<Vector2> points, IEnumerable<Vector2> uvs)
-			:this()
-		{
-			AddVertices(points, uvs);
-		}
-		public Mesh(IEnumerable<Vector3> points)
-			:this()
-		{
-			AddVertices(points);
-		}
-		public Mesh(IEnumerable<Vector3> points, IEnumerable<Vector2> uvs)
-			:this()
-		{
-			AddVertices(points, uvs);
+			this.program = program;
+			vao = new VAO(program);
 		}
 
 		public void Dispose()
 		{
-			vertexPosition.Dispose();
-			vertexUV.Dispose();
+			foreach (AttributeHelper attr in attributes.Values)
+				attr.Dispose();
+
+			attributes.Clear();
+			uniforms.Clear();
+			vertices.Clear();
 		}
 
-		void GenerateBuffers()
-		{
-			vao = new VAO();
-			vertexPosition = new VBO<Vector3>();
-			vertexUV = new VBO<Vector2>();
+		public bool ContainsAttribute(string name) { return attributes.ContainsKey(name); }
 
-			vertexPosition.BindToVAO(vao);
-			vertexUV.BindToVAO(vao);
-		}
+		void SetVertexCount(int n)
+		{
+			if (vertices.Count > n)
+				vertices.RemoveRange(n, vertices.Count - n);
+			else if (vertices.Count < n)
+				while (vertices.Count < n)
+					vertices.Add(new Vertex(this));
 
-		void AddVertices(IEnumerable<Vector2> vert)
-		{
-			Vector3[] v = Array.ConvertAll(vert.ToArray(), Vec2ToVec3);
-			AddVertices(v);
-		}
-		void AddVertices(IEnumerable<Vector2> vert, IEnumerable<Vector2> uv)
-		{
-			Vector3[] v = Array.ConvertAll(vert.ToArray(), Vec2ToVec3);
-			AddVertices(v, uv);
-		}
-		void AddVertices(IEnumerable<Vector3> vert)
-		{
-			vertices.AddRange(vert);
-			UploadVertices();
-		}
-		void AddVertices(IEnumerable<Vector3> vert, IEnumerable<Vector2> uvs)
-		{
-			vertices.AddRange(vert);
-			uv.AddRange(uvs);
-			UploadVertices();
+			UploadAllAttributes();
 		}
 
-		void UploadVertices()
+		public AttributeHelper<T> GetAttribute<T>(string name) where T : struct
 		{
-			vao.Bind();
-			if (uv.Count == vertices.Count)
+			if (attributes.ContainsKey(name))
+				return attributes[name] as AttributeHelper<T>;
+			else
 			{
-				vertexPosition.UploadData(vertices.ToArray());
-				vertexUV.UploadData(uv.ToArray());
-				vertexPosition.BindToAttribute(Program, "vertexPosition");
-				vertexUV.BindToAttribute(Program, "vertexUV");
-			} else
-			{
-				vertexPosition.UploadData(vertices.ToArray());
-				vertexPosition.BindToAttribute(Program, "vertexPosition");
-				vertexPosition.BindToAttribute(Program, "vertexUV");
+				AttributeHelper<T> newAttribute = new AttributeHelper<T>(name, this);
+				attributes.Add(name, newAttribute);
+
+				return newAttribute;
 			}
 		}
 
-		public void Reset()
+		void UploadAllAttributes()
 		{
-			modelMatrix = Matrix4.Identity;
+			foreach (AttributeHelper attribute in attributes.Values)
+				attribute.UploadData();
 		}
 
-		public void Translate(float x, float y) { Translate(new Vector3(x, y, 0f)); }
-		public void Translate(float x, float y, float z) { Translate(new Vector3(x, y, z)); }
-		public void Translate(Vector2 d) { Translate(new Vector3(d)); }
-		public void Translate(Vector3 d)
+		public UniformHelper GetUniform(string name)
 		{
-			modelMatrix = Matrix4.CreateTranslation(d) * modelMatrix;
-		}
-
-		public void Scale(float s) { Scale(new Vector3(s)); }
-		public void Scale(float x, float y) { Scale(new Vector3(x, y, 1f)); }
-		public void Scale(float x, float y, float z) { Scale(new Vector3(x, y, z)); }
-		public void Scale(Vector2 s) { Scale(new Vector3(s.X, s.Y, 1f)); }
-		public void Scale(Vector3 s)
-		{
-			modelMatrix = Matrix4.CreateScale(s) * modelMatrix;
-		}
-
-		public void RotateX(float d)
-		{
-			modelMatrix = Matrix4.CreateRotationX(TKMath.ToRadians(d)) * modelMatrix;
-		}
-		public void RotateY(float d)
-		{
-			modelMatrix = Matrix4.CreateRotationY(TKMath.ToRadians(d)) * modelMatrix;
-		}
-		public void RotateZ(float d)
-		{
-			modelMatrix = Matrix4.CreateRotationZ(TKMath.ToRadians(d)) * modelMatrix;
-		}
-
-		public void Draw() { Draw(PrimitiveType); }
-        public void Draw(PrimitiveType pt)
-		{
-			vao.Bind();
-
-			Program["projection"].SetValue(Camera.activeCamera.Projection);
-			Program["view"].SetValue(Camera.activeCamera.View);
-			Program["model"].SetValue(modelMatrix);
-
-			if (textureEnabled && texture != null)
+			if (uniforms.ContainsKey(name))
+				return uniforms[name];
+			else
 			{
-				Program["usingTexture"].SetValue(true);
-				texture.Bind();
+				UniformHelper uni = new UniformHelper(this, name);
+				uniforms.Add(name, uni);
 
-				if (tileset != null)
-				{
-					Program["tiledTexture"].SetValue(true);
-					Program["tileSize"].SetValue(tileset.UVSize);
-					Program["tilePosition"].SetValue(tileset.Position);
-				}
-				else Program["tiledTexture"].SetValue(false);
+				return uni;
 			}
-			else Program["usingTexture"].SetValue(false);
+		}
 
-			Program["color"].SetValue(Color);
-			Program["fillColor"].SetValue(FillColor);
+		public UniformHelper this[string name]
+		{
+			get { return GetUniform(name); }
+		}
 
-			GL.DrawArrays(pt, 0, vertices.Count);
+		void UploadUniforms()
+		{
+			foreach (UniformHelper uniform in uniforms.Values)
+				uniform.UploadData();
+		}
+
+		public virtual void Draw()
+		{
+			program.Use();
+			UploadUniforms();
+
+			vao.Bind();
+			GL.DrawArrays(PrimitiveType.Quads, 0, vertices.Count);
+			vao.Unbind();
 		}
 	}
 }

@@ -6,9 +6,41 @@ using OpenTK.Graphics.OpenGL;
 
 namespace TKTools
 {
-	public class VBO<T> : IDisposable where T : struct
+	public abstract class VBO : IDisposable
 	{
-		protected int vboHandle;
+		int vboHandle;
+
+		public abstract int Dimensions{ get; }
+
+		public VBO()
+		{
+			GenerateBuffer();
+		}
+
+		public void Dispose()
+		{
+			GL.DeleteBuffer(vboHandle);
+		}
+
+		void GenerateBuffer()
+		{
+			vboHandle = GL.GenBuffer();
+		}
+
+		public void Bind()
+		{
+			GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
+		}
+
+		public void Unbind()
+		{
+			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+		}
+	}
+
+	public class VBO<T> : VBO where T : struct
+	{
+		//protected int vboHandle;
 		List<T> vertexList = new List<T>();
 		int dimensions = 0;
 
@@ -19,76 +51,42 @@ namespace TKTools
 				return vertexList.ToArray();
 			}
 		}
-		public int Count
-		{
-			get
-			{
-				return vertexList.Count;
-			}
-		}
-		public int Dimensions
+		public override int Dimensions
 		{
 			get
 			{
 				return dimensions;
 			}
 		}
-		public int ByteSize
+		int ByteSize
 		{
 			get
 			{
-				return dimensions * 4;
+				return dimensions * sizeof(float);
 			}
 		}
 
 		public VBO()
+			:base()
 		{
-			vboHandle = GL.GenBuffer();
+			switch (typeof(T).Name)
+			{
+				case "Single": dimensions = 1; break;
+				case "Vector2": dimensions = 2; break;
+				case "Vector3": dimensions = 3; break;
+				case "Vector4": dimensions = 4; break;
+				default: throw new NotSupportedException();
+			}
 		}
 
-		public void Dispose()
-		{
-			GL.DeleteBuffer(vboHandle);
-		}
-
-		public void Bind()
-		{
-			GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
-		}
-
-		public void BindToVAO(VAO vao)
-		{
-			vao.Bind();
-			Bind();
-		}
-
-		public void UploadData(T[] data)
+		public void UploadData(T[] data, BufferUsageHint hint = BufferUsageHint.StaticDraw)
 		{
 			vertexList.Clear();
 			vertexList.AddRange(data);
 
-			switch (typeof(T).Name)
-			{
-				case "Vector2": dimensions = 2; break;
-				case "Vector3": dimensions = 3; break;
-				case "Vector4": dimensions = 4; break;
-			}
-
 			Bind();
-			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(ByteSize * data.Length), data, BufferUsageHint.StaticDraw);
-		}
-
-		public void BindToAttribute(int attribIndex)
-		{
-			Bind();
-			GL.EnableVertexAttribArray(attribIndex);
-			GL.VertexAttribPointer(attribIndex, Dimensions, VertexAttribPointerType.Float, false, 0, 0);
-		}
-
-		public void BindToAttribute(ShaderProgram program, string attrName)
-		{
-			//Bind();
-			program[attrName].SetValue(this);
+			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(ByteSize * data.Length), data, hint);
+			Unbind();
 		}
 	}
 }

@@ -32,8 +32,7 @@ void main() {
 
 	//total = texture2D(texture, vec2(uv + pixelUV * kernel));
 
-	//fragment = mix(texture2D(texture, uv), total, opacity);
-	fragment = total;
+	fragment = mix(texture2D(texture, uv), total, opacity);
 
 	/*
 	int k = int((uv.x * 2 - 1) * kernel);

@@ -28,15 +28,12 @@ namespace TKTools.Context
 			:base(width, height, gm)
 		{
 			activeContext = this;
-			Mesh.CompileStandardShader();
+			Model.CompileStandardShader();
 			Texture.InitVAO();
 		}
 		public Context()
-			:base()
+			:this(800, 600, new GX.GraphicsMode(new GX.ColorFormat(8, 8, 8, 8), 16, 8))
 		{
-			activeContext = this;
-			Mesh.CompileStandardShader();
-			Texture.InitVAO();
 		}
 
 		protected override void OnResize(EventArgs e)
@@ -78,7 +75,7 @@ namespace TKTools.Context
 		{
 			base.OnRenderFrame(e);
 
-			GL.Clear(ClearBufferMask.ColorBufferBit);
+			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			Camera.activeCamera.ClearBuffer();
 			Camera.activeCamera.BindBuffer();

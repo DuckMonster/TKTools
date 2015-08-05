@@ -43,7 +43,7 @@ void main() {
 		{
 			screenProgram = new ShaderProgram(screenVertexSource, screenFragmentSource);
 
-			screenVAO = new VAO();
+			screenVAO = new VAO(screenProgram);
 
 			vboVertexPosition = new VBO<Vector2>();
 			vboVertexPosition.UploadData(new Vector2[] {
@@ -61,10 +61,8 @@ void main() {
 				new Vector2(0, 1)
 			});
 
-			vboVertexPosition.BindToVAO(screenVAO);
-			vboVertexPosition.BindToAttribute(screenProgram, "vertexPosition");
-			vboVertexUV.BindToVAO(screenVAO);
-			vboVertexUV.BindToAttribute(screenProgram, "vertexUV");
+			screenVAO.BindAttribute("vertexPosition", vboVertexPosition);
+			screenVAO.BindAttribute("vertexUV", vboVertexUV);
 		}
 
 		internal static void DrawTextureToScreen(Texture t) { DrawTextureToScreen(new Texture[] { t }, screenProgram); }
@@ -74,9 +72,9 @@ void main() {
 		{
 			GL.Disable(EnableCap.DepthTest);
 
+			screenVAO.Bind();
 			program.Use();
 			textures[0].Bind();
-			screenVAO.Bind();
 
 			GL.DrawArrays(PrimitiveType.Quads, 0, 4);
 		}
