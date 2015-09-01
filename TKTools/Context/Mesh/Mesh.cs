@@ -13,12 +13,6 @@ namespace TKTools.Context
 
 		public Mesh Mesh { get { return mesh; } }
 
-		public Vector3 Position
-		{
-			get { return GetAttribute<Vector3>("position"); }
-			set { SetAttribute("position", value); }
-		}
-
 		public Vertex(Mesh mesh)
 		{
 			this.mesh = mesh;
@@ -29,7 +23,12 @@ namespace TKTools.Context
 			if (attributes.ContainsKey(name))
 				attributes[name] = value;
 			else
+			{
 				attributes.Add(name, value);
+
+				if (!mesh.ContainsAttribute(name))
+					mesh.GetAttribute<T>(name);
+			}
 		}
 
 		public T GetAttribute<T>(string name) where T : struct
@@ -160,29 +159,7 @@ namespace TKTools.Context
 		#endregion
 
 		#region Enum stuff
-		class MeshEnum : IEnumerator
-		{
-			Mesh mesh;
-			int index = -1;
-
-			public MeshEnum(Mesh m)
-			{
-				this.mesh = m;
-			}
-
-			public void Reset() { index = -1; }
-			public bool MoveNext()
-			{
-				index++;
-				return mesh.vertices.Count < index;
-			}
-
-			public object Current
-			{
-				get { return mesh.vertices[index]; }
-			}
-		}
-		public IEnumerator GetEnumerator() { return new MeshEnum(this); }
+		public IEnumerator GetEnumerator() { foreach (Vertex v in vertices) yield return v; }
 		#endregion
 
 		List<Vertex> vertices = new List<Vertex>();
@@ -191,6 +168,9 @@ namespace TKTools.Context
 
 		protected VAO vao;
 		protected ShaderProgram program;
+		protected PrimitiveType primitiveType = PrimitiveType.Polygon;
+
+		protected bool dirty = true;
 
 		public ShaderProgram Program
 		{
@@ -202,10 +182,21 @@ namespace TKTools.Context
 			get { return vertices; }
 		}
 
+		public PrimitiveType PrimitiveType
+		{
+			get { return primitiveType; }
+			set { primitiveType = value; }
+		}
+
 		public Mesh(ShaderProgram program)
 		{
 			this.program = program;
 			vao = new VAO(program);
+		}
+		public Mesh(ShaderProgram program, int nmbrOfVertices)
+			:this(program)
+		{
+			SetVertexCount(nmbrOfVertices);
 		}
 
 		public void Dispose()
@@ -229,6 +220,11 @@ namespace TKTools.Context
 					vertices.Add(new Vertex(this));
 
 			UploadAllAttributes();
+		}
+
+		internal void SetDirty()
+		{
+			dirty = true;
 		}
 
 		public AttributeHelper<T> GetAttribute<T>(string name) where T : struct
@@ -274,13 +270,17 @@ namespace TKTools.Context
 				uniform.UploadData();
 		}
 
-		public virtual void Draw()
+		public void Draw() { Draw(PrimitiveType); }
+		public virtual void Draw(PrimitiveType type)
 		{
 			program.Use();
 			UploadUniforms();
 
+			if (dirty)
+				UploadAllAttributes();
+
 			vao.Bind();
-			GL.DrawArrays(PrimitiveType.Quads, 0, vertices.Count);
+			GL.DrawArrays(type, 0, vertices.Count);
 			vao.Unbind();
 		}
 	}

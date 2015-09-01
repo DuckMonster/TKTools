@@ -7,12 +7,6 @@ using TKTools.Mathematics;
 
 namespace TKTools.Context
 {
-	public enum MeshPrimitive
-	{
-		Triangle,
-		Quad
-	}
-
 	public class Mesh : IDisposable
 	{
 		const string vertexSource =

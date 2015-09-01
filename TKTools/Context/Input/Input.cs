@@ -62,7 +62,10 @@ namespace TKTools.Context.Input
 		}
 		public float WheelDelta
 		{
-			get { return Wheel - Mouse.previous.Wheel; }
+			get
+			{
+				return Wheel - Mouse.previous.Wheel;
+			}
 		}
 		public Vector3 Position
 		{

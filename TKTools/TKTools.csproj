@@ -32,15 +32,15 @@
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Users\Emil\Documents\OpenTK\1.1\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+      <HintPath>..\..\!!OpenTK\1.1\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK.Compatibility, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Users\Emil\Documents\OpenTK\1.1\Binaries\OpenTK\Release\OpenTK.Compatibility.dll</HintPath>
+      <HintPath>..\..\!!OpenTK\1.1\Binaries\OpenTK\Release\OpenTK.Compatibility.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Users\Emil\Documents\OpenTK\1.1\Binaries\OpenTK\Release\OpenTK.GLControl.dll</HintPath>
+      <HintPath>..\..\!!OpenTK\1.1\Binaries\OpenTK\Release\OpenTK.GLControl.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
@@ -58,10 +58,11 @@
     <Compile Include="Context\Input\Input.cs" />
     <None Include="Context\OldMesh.cs" />
     <None Include="Context\MeshOld2.cs" />
-    <Compile Include="Context\Mesh.cs" />
-    <Compile Include="Context\Model.cs" />
+    <Compile Include="Context\Mesh\Mesh.cs" />
+    <Compile Include="Context\Mesh\Model2D.cs" />
+    <Compile Include="Context\Mesh\Model.cs" />
     <Compile Include="Context\Ray.cs" />
-    <None Include="Context\Sprite.cs" />
+    <None Include="Context\Mesh\Sprite.cs" />
     <Compile Include="Context\Tileset.cs" />
     <Compile Include="FrameBuffer.cs" />
     <Compile Include="Polygon.cs" />

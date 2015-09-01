@@ -21,6 +21,7 @@ namespace TKTools.Context
 
 		float ratio;
 		float fieldOfView = 45f;
+		float farPlane = 1000f;
 
 		public Vector3 Position
 		{
@@ -47,6 +48,12 @@ namespace TKTools.Context
 		internal float Ratio
 		{
 			get { return ratio; }
+		}
+
+		public float FarPlane
+		{
+			get { return farPlane; }
+			set { farPlane = value; }
 		}
 
 		public Camera() : this(new Vector3(0, 0, 2f), Vector3.Zero) { }
@@ -144,24 +151,9 @@ namespace TKTools.Context
 			ratio = Context.activeContext.AspectRatio;
 
 			if (Orthogonal)
-				projection = Matrix4.CreateOrthographicOffCenter(-5f * ratio, 5f * ratio, -5f, 5f, 1f, 100f);
+				projection = Matrix4.CreateOrthographicOffCenter(-5f * ratio, 5f * ratio, -5f, 5f, 1f, farPlane);
 			else
-			{
-				/*float v = (float)Math.Tan(TKMath.ToRadians(45f) / 2);
-				float n = 1f;
-				float f = 50f;
-
-				projection = new Matrix4(
-					1 / (ratio * v), 0f, 0f, 0f,
-					0f, 1 / v, 0f, 0f,
-					0f, 0f, (-n - f)/-(n - f), (2 * f * n) / (n - f),
-					0f, 0f, -1f, 0f
-					);
-
-				projection.Transpose();*/
-
-				projection = Matrix4.CreatePerspectiveFieldOfView(TKMath.ToRadians(45f), ratio, 1f, 100f);
-			}
+				projection = Matrix4.CreatePerspectiveFieldOfView(TKMath.ToRadians(45f), ratio, 1f, farPlane);
 		}
 
 		public Matrix4 View

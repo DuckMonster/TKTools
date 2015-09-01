@@ -126,8 +126,6 @@ void main() {
 		{
 			using (Bitmap bmp = new Bitmap(filename))
 			{
-				bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
-
 				LoadTexture();
 				UploadBitmap(bmp);
 			}

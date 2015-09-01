@@ -72,6 +72,11 @@ namespace TKTools
 			}
 		}
 
+		public Vector3 Rgb
+		{
+			get { return ToVector.Xyz; }
+		}
+
 		public Vector4 ToVector
 		{
 			get
@@ -107,6 +112,11 @@ namespace TKTools
 			g = (float)gg / 255;
 			b = (float)bb / 255;
 			a = (float)aa / 255;
+		}
+
+		public Color(System.Drawing.Color color)
+			:this(color.R, color.G, color.B, color.A)
+		{
 		}
 
 		public static Color Blend(Color c1, Color c2, float v)

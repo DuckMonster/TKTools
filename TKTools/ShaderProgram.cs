@@ -199,6 +199,16 @@ namespace TKTools
 			}
 		}
 
+		public static string ReadFile(string filename)
+		{
+			string str = "";
+
+			using (StreamReader reader = new StreamReader(filename))
+				str = reader.ReadToEnd();
+
+			return str;
+		}
+
 		public static void ReadFileCombined(string filename, ref string vertexSrc, ref string fragmentSrc)
 		{
 			using (StreamReader reader = new StreamReader(filename))

@@ -25,14 +25,14 @@ namespace TKTools.Context
 		}
 
 		public Context(int width, int height, GX.GraphicsMode gm)
-			:base(width, height, gm)
+			: base(width, height, gm)
 		{
 			activeContext = this;
 			Model.CompileStandardShader();
 			Texture.InitVAO();
 		}
 		public Context()
-			:this(800, 600, new GX.GraphicsMode(new GX.ColorFormat(8, 8, 8, 8), 16, 8))
+			: this(800, 600, new GX.GraphicsMode(new GX.ColorFormat(8, 8, 8, 8), 16, 8))
 		{
 		}
 
@@ -66,8 +66,10 @@ namespace TKTools.Context
 		protected override void OnUpdateFrame(FrameEventArgs e)
 		{
 			base.OnUpdateFrame(e);
+
 			Input.Keyboard.Update();
 			Input.Mouse.Update(mouseX, mouseY, this);
+
 			OnUpdate();
 		}
 

@@ -20,7 +20,6 @@ namespace TKTools
 		{
 			Bind();
 			GL.RenderbufferStorage(RenderbufferTarget.RenderbufferExt, RenderbufferStorage.Depth24Stencil8, fb.Width, fb.Height);
-			//GL.RenderbufferStorageMultisample(RenderbufferTarget.RenderbufferExt, 16, RenderbufferStorage.Depth24Stencil8, fb.Width, fb.Height);
 
 			fb.Bind();
 			GL.FramebufferRenderbuffer(FramebufferTarget.FramebufferExt, FramebufferAttachment.DepthStencilAttachment, RenderbufferTarget.RenderbufferExt, bufferHandle);
