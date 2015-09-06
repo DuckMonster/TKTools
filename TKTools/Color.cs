@@ -1,4 +1,6 @@
 ﻿using OpenTK;
+using System;
+using TKTools.Mathematics;
 using DRAW = System.Drawing;
 
 namespace TKTools
@@ -72,6 +74,38 @@ namespace TKTools
 			}
 		}
 
+		public float Max
+		{
+			get
+			{
+				if (r > g && r > b)
+					return r;
+				else
+				{
+					if (g > b)
+						return g;
+
+					return b;
+				}
+			}
+		}
+
+		public float Min
+		{
+			get
+			{
+				if (r < g && r < b)
+					return r;
+				else
+				{
+					if (g < b)
+						return g;
+
+					return b;
+				}
+			}
+		}
+
 		public Vector3 Rgb
 		{
 			get { return ToVector.Xyz; }
@@ -82,6 +116,35 @@ namespace TKTools
 			get
 			{
 				return new Vector4(R, G, B, A);
+			}
+		}
+
+		public ColorHSL ToHSL
+		{
+			get
+			{
+				float M = Max, m = Min;
+
+				float C = M - m;
+				float H = 0;
+
+				if (C == 0)
+					H = 0;
+				else if (M == r)
+					H = (g - b) / C;
+				else if (M == g)
+					H = (b - r) / C + 2;
+				else if (M == b)
+					H = (r - g) / C + 4;
+
+				H = TKMath.Mod(H, 0f, 6f) * 60;
+
+				float L = (m + M) / 2;
+				float S = C != 0 ?
+					C / (1 - Math.Abs(L * 2 - 1)) :
+					0;
+
+				return new ColorHSL(H, S, L);
 			}
 		}
 
@@ -148,7 +211,7 @@ namespace TKTools
 
 		public static Color operator *(Color a, float f)
 		{
-			return new Color(a.r * f, a.g * f, a.b * f, a.a * f);
+			return new Color(a.r * f, a.g * f, a.b * f, a.a);
 		}
 
 		public static float Clamp(float v)

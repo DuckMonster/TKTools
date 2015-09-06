@@ -4,10 +4,36 @@ using System;
 
 namespace TKTools.Context.Input
 {
+	public enum KeyPrefix
+	{
+		None = 000,
+		Control = 001,
+		Alt = 010,
+		Shift = 100,
+		ControlAlt = 011,
+		ControlShift = 101,
+		AltShift = 110,
+		ControlAltShift = 111
+	}
+
 	public class KeyboardWatch
 	{
 		public KeyboardWatch()
 		{
+		}
+
+		public bool HasPrefix(KeyPrefix p)
+		{
+			int v = 0;
+
+			if (this[Key.LControl])
+				v += 1;
+			if (this[Key.LAlt])
+				v += 10;
+			if (this[Key.LShift])
+				v += 100;
+
+			return (int)p == v;
 		}
 
 		public bool KeyPressed(Key k)

@@ -64,6 +64,11 @@ namespace TKTools
 				GL.Uniform4(ID, ref vec);
 			}
 
+			public void SetValue(ColorHSL c)
+			{
+				SetValue(c.ToVector);
+			}
+
 			public void SetValue(Color c)
 			{
 				SetValue(c.ToVector);

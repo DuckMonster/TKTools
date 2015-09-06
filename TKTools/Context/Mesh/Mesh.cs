@@ -151,6 +151,7 @@ namespace TKTools.Context
 					case "Integer": u.SetValue((int)value); break;
 					case "Boolean": u.SetValue((bool)value); break;
 					case "Color": u.SetValue((Color)value); break;
+					case "ColorHSL": u.SetValue((ColorHSL)value); break;
 					case "Matrix4": u.SetValue((Matrix4)value); break;
 					default: throw new NotSupportedException();
 				}

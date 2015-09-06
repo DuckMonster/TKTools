@@ -169,11 +169,16 @@ namespace TKTools.Context
 			get { return projection; }
 		}
 
+		public Matrix4 ViewProjection
+		{
+			get { return Projection * View; }
+		}
+
 		internal void Draw(FrameBuffer fb = null)
 		{
 			Texture finalTexture = frameBuffer.Texture;
 
-			foreach(Filter.Filter f in filterList)
+			foreach (Filter.Filter f in filterList)
 			{
 				f.Apply(finalTexture);
 				finalTexture = f.OutputTexture;
