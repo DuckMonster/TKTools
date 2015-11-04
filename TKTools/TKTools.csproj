@@ -72,7 +72,7 @@
     <Compile Include="ShaderProgram.cs" />
     <Compile Include="Sound.cs" />
     <Compile Include="TextDrawer.cs" />
-    <None Include="Context\TextBox.cs" />
+    <Compile Include="Context\TextBox.cs" />
     <Compile Include="Texture.cs" />
     <Compile Include="TKMath.cs" />
     <Compile Include="VAO.cs" />

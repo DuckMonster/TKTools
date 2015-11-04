@@ -11,7 +11,7 @@ namespace TKTools
 		private static uint white = 0xFFFFFFFF, black = 0xFF000000, gray = 0xFF808080,
 			red = 0xFFFF0000, green = 0xFF00FF00, blue = 0xFF0000FF,
 			yellow = 0xFFFFFF00, aqua = 0xFF00FFFF, teal = 0xFF008080, pink = 0xFFFF00FF,
-			purple = 0xFF800080, orange = 0xFFFFA500, violet = 0xFFEE82EE;
+			purple = 0xFF800080, orange = 0xFFFFA500, violet = 0xFFEE82EE, transparent = 0x00FFFFFF;
 		public static Color White { get { return new Color(white); } }
 		public static Color Black { get { return new Color(black); } }
 		public static Color Gray { get { return new Color(gray); } }
@@ -25,6 +25,7 @@ namespace TKTools
 		public static Color Purple { get { return new Color(purple); } }
 		public static Color Orange { get { return new Color(orange); } }
 		public static Color Violet { get { return new Color(violet); } }
+		public static Color Transparent { get { return new Color(transparent); } }
 		#endregion
 
 		private float r, g, b, a;

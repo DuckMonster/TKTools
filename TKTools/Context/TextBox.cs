@@ -38,7 +38,7 @@ namespace TKTools.Context
 
 		Stopwatch updateWatch;
 
-		Mesh mesh;
+		Model model;
 
 		VerticalAlignment verticalAlign;
 		HorizontalAlignment horizontalAlign;
@@ -192,20 +192,20 @@ namespace TKTools.Context
 			}
 		}
 
-		public Mesh Mesh
+		public Model Model
 		{
 			get
 			{
-				mesh.Vertices = Vertices;
-				mesh.UV = UV;
-				return mesh;
+				model.VertexPosition = Vertices;
+				model.VertexUV = UV;
+				return model;
 			}
 		}
 
 		public Color Color
 		{
-			get { return mesh.Color; }
-			set { mesh.Color = value; }
+			get { return model.Color; }
+			set { model.Color = value; }
 		}
 
 		public long UpdateRate
@@ -230,13 +230,13 @@ namespace TKTools.Context
 			font = f;
 			texture = new Texture();
 
-			mesh = new Mesh(Vertices, UV);
-			mesh.Texture = texture;
+			model = new Model(Vertices, UV);
+			model.Texture = texture;
 		}
 
 		public void Dispose()
 		{
-			mesh.Dispose();
+			model.Dispose();
 			texture.Dispose();
 			bitmap.Dispose();
 			bitmapGraphics.Dispose();
